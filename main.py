@@ -38,4 +38,4 @@ for i in range(nt-1):
   T[i][0] = T[i][0] + 2*dt*h_m*(Tc-T[i][0])/(rho_insulator*cp_insulator*dr)
   T[i+1] = (np.matmul(A_inverse, T[i]))
 
-#isajdaisehasioehasuhe
+#isajdaisehasioehasuheaeasd
