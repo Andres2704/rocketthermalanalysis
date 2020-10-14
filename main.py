@@ -23,7 +23,7 @@ for i in range(1, nr-1):
    A[i][i] = 1 + 2 * alpha * dt / (dr ** 2)
    A[i][i + 1] = -(alpha * dt) / dr ** 2 - alpha * dt / (2 * dr * r[i])
 
-#Creating the T matrix
+#Creating the T matrixss
 T = np.zeros([nt, nr])
 
 #Setting initial values for the T matrix
