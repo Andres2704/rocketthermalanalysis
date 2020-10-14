@@ -23,7 +23,7 @@ for i in range(1, nr-1):
    A[i][i] = 1 + 2 * alpha * dt / (dr ** 2)
    A[i][i + 1] = -(alpha * dt) / dr ** 2 - alpha * dt / (2 * dr * r[i])
 
-#Creating the T matrixss
+#Creating the T matrix
 T = np.zeros([nt, nr])
 
 #Setting initial values for the T matrix
@@ -38,3 +38,4 @@ for i in range(nt-1):
   T[i][0] = T[i][0] + 2*dt*h_m*(Tc-T[i][0])/(rho_insulator*cp_insulator*dr)
   T[i+1] = (np.matmul(A_inverse, T[i]))
 
+#isajdaisehasioehasuhe
