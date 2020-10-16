@@ -129,28 +129,7 @@ class motor_case():
             A[i][i + 1] = -(alpha * self.dt) / self.dr ** 2 - alpha * self.dt / (2 * self.dr * self.r[i])
         return A
 
-class bulkhead(object):
-    def __init__(self, material_case, material_liner, insulator_thk, case_thk, r_steps, hm, Tc, Ta, burn_time, t_steps,
-                 z_steps, z_thk, r_ex, r_in_ex,):
-        # Explicit atributes for bulkhead
-        self.rho_case, self.k_case, self.cp_case = case_selector(material_case) # Case properties
-        self.rho_insulator, self.k_insulator, self.cp_insulator = insulator_selector(material_liner) # Insulator properties
-        self.insulator_thk_ex = insulator_thk  # Insulator thickness
-        self.t = burn_time
-        self.nt_ex = t_steps    # Time steps
-        self.nz = z_steps # Z steps
-        self.sectionsr_ex = r_steps # Radial steps
-        self.z_thk_ex = z_thk # Z tichnes
-        self.r_ex_ex = r_ex
-        self.r_in_ex = r_in_ex
-        self.alpha_case = float(self.k_case / (self.cp_case * self.rho_case))
-        self.alpha_insulator = float(self.k_insulator / (self.cp_insulator * self.rho_insulator))
-        self.Tc = Tc # Combustion chamber temperature
-        self.Ta = Ta # Ambient temperature
-        self.h_m = hm # Average Convective heat coefficient
-        self.T = self.run_analysis_bulkhead()
-
-    def run_analysis_bulkhead(self):
+def run_analysis_bulkhead(self):
         # Radial coordinate
         self.r_1 = 0  # Radial start position [m]
         self.r_2 = self.r_in_ex  # Radial position of insulation end [m]
@@ -194,30 +173,28 @@ class bulkhead(object):
                         k = self.k_case
                     if i == self.nr_ex - 1:
                         if l == self.nz_ex - 1:  # r end and z end
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
-                                                      alpha * self.dt * (((T_explicit[j][i - 1][l] - T_explicit[j][i][l]) / (self.r[i] * self.dr)) +
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + alpha * self.dt * ( ((-T_explicit[j][i - 1][l] + T_explicit[j][i][l]) / (self.r[i] * self.dr)) +
                                                                          ((T_explicit[j][i - 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i - 1][l]) / (self.dr ** 2)) +
                                                                          ((T_explicit[j][i][l - 2] + T_explicit[j][i][l] - 2 * T_explicit[j][i][l - 1]) / (self.dz ** 2)))
+                                                      
                         elif l == 0:  # r end and z start
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) * \
-                                                      ((k * self.dz * (T_explicit[j][i][l] - T_explicit[j][i - 1][l]) / (2 * self.dr)) +
-                                                       (k * self.dr * (T_explicit[j][i][l + 1] - T_explicit[j][i][l]) / self.dz) +
-                                                       self.h_m * self.dr * (self.Tc - T_explicit[j][i][0]))
+                            T_explicit[j + 1][i][l] = (2*self.h_m*self.dt*self.Tc)/(rho*cp*self.dz) + (1 + (k*self.dt)/(rho*cp*self.dr*self*dr) - (k*self.dt)/(rho*cp*self.dz*self*dz) - (2*self.h_m*self.dt)/(rho*cp*self.dz))*T[j][i][l] +
+														(-k*self.dt/(rho*cp*self.dr*self.dr))*T[j][i-1][l] + (k*self.dt/(rho*cp*self.dz*self.dz))*T[j][i][l+1] 
                         else:  # r end and z middle
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
-                                                      alpha * self.dt * (((T_explicit[j][i][l] - T_explicit[j][i-1][l]) / (self.r[i] * self.dr)) +
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + alpha * self.dt * (((T_explicit[j][i][l] - T_explicit[j][i-1][l]) / (self.r[i] * self.dr)) +
                                                                          ((T_explicit[j][i - 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i - 1][l]) / (self.dr ** 2)) +
                                                                          ((T_explicit[j][i][l + 1] + T_explicit[j][i][l - 1] - 2 * T_explicit[j][i][l]) / (self.dz ** 2)))
+                                                      
                     elif i == 0:
                         if l == self.nz - 1:  # r start and z end
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
-                                                      alpha * self.dt * (((T_explicit[j][i + 1][l] - T_explicit[j][i][l]) / (self.r[i] * self.dr)) +
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + alpha * self.dt * (((T_explicit[j][i + 1][l] - T_explicit[j][i][l]) / (self.r[i] * self.dr)) +
                                                                          ((T_explicit[j][i + 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i + 1][l]) / (self.dr ** 2)) +
                                                                          ((T_explicit[j][i][l] + T_explicit[j][i][l - 2] - 2 * T_explicit[j][i][l-1]) / (self.dz ** 2)))
+                                                      
                         elif l == 0:  # r start and z start
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) * \
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) *
                                                       ((k * self.dz * (T_explicit[j][i + 1][l] - T_explicit[j][i][l]) / (2 * self.dr)) +
-                                                       (k * self.dr * (T_explicit[j][i][l + 1] - T_explicit[j][i][l]) / self.dz) +
+                                                       (k * self.dr * (T_explicit[j][i][l + 1] - T_explicit[j][i][l]) / (2 * self.dz) +
                                                        self.h_m * self.dr * (self.Tc - T_explicit[j][i][0]))
                         else:  # r start and z middle
                             T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
@@ -231,17 +208,13 @@ class bulkhead(object):
                                                                 ((T_explicit[j][i + 1][l] + T_explicit[j][i - 1][l] - 2 * T_explicit[j][i][l]) / (self.dr ** 2)) +
                                                                 ((T_explicit[j][i][l] + T_explicit[j][i][l - 2] - 2 * T_explicit[j][i][l - 1]) / (self.dz ** 2)))
                         elif l == 0:  # r middle and z start
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + (
-                                        (2 * self.dt) / (rho * cp * self.dr * self.dz)) * \
-                                                      ((k * self.dz * (T_explicit[j][i + 1][l] - T_explicit[j][i][l]) / (2 * self.r[i] * self.dr)) +
-                                                       (k * self.dz * (T_explicit[j][i][l] - T_explicit[j][i - 1][l]) / (2 * self.r[i] * self.dr)) +
-                                                       (k * self.dr * (T_explicit[j][i][l + 1] - T_explicit[j][i][l]) / self.dz) +
-                                                       self.h_m * self.dr * (self.Tc - T_explicit[j][i][0]))
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + ((k*self.dz*self.dt)/(rho*cp*self.dr * self.dz))*(((T_explicit[j][i + 1][l] - T_explicit[j][i][l])/self.dr) + ((T_explicit[j][i][l] - T_explicit[j][i - 1][l])/self.dr))
+														+ ((k*self.dr*self.dt)/(rho*cp*self.dr * self.dz))*(((T_explicit[j][i][l + 1] - T_explicit[j][i][l]) / self.dz)) +
+                                                        0.5 * self.h_m * self.dr * (self.Tc - T_explicit[j][i][0]))
                         else:  # r middle and z middle
-                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + alpha * self.dt * (((T_explicit[j][i + 1][l] - T_explicit[j][i - 1][l]) /
-                                                                  (2 * self.r[i] * self.dr)) + ((T_explicit[j][i + 1][l] +
-                                                                  T_explicit[j][i - 1][l] - 2 *T_explicit[j][i][l]) / (self.dr ** 2)) +
-                                                                  ((T_explicit[j][i][l + 1] + T_explicit[j][i][l - 1] - 2 * T_explicit[j][i][l]) / (self.dz ** 2)))
+                            T_explicit[j + 1][i][l] = T_explicit[j][i][l] + alpha * self.dt * (((T_explicit[j][i + 1][l] - T_explicit[j][i - 1][l]) / (2 * self.r[i] * self.dr)) +
+																((T_explicit[j][i + 1][l] + T_explicit[j][i - 1][l] - 2 *T_explicit[j][i][l]) / (self.dr ** 2)) +
+                                                                 ((T_explicit[j][i][l + 1] + T_explicit[j][i][l - 1] - 2 * T_explicit[j][i][l]) / (self.dz ** 2)))
         return T_explicit
 
 if __name__ == "__main__":
