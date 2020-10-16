@@ -102,7 +102,7 @@ class motor_case():
                     T[j + 1][i] = T[j][i] + alpha * self.dt * (((1 / (self.r[i] * self.dr)) * (T[j][i] - T[j][i - 1])) + ((T[j][i] + T[j][i - 2] - 2 * T[j][i - 1]) /
                                                                 (self.dr ** 2)))
                 elif i == 0:
-                    T[j + 1][i] = T[j][i] + (2 / (rho * cp * self.dr)) * (self.h_m * self.dt * (Tc - T[j][0]) + k * (T[j][1] - T[j][0]))
+                    T[j + 1][i] = T[j][i] + (2 / (rho * cp * self.dr)) * (self.h_m * self.dr * (Tc - T[j][0]) + k * (T[j][1] - T[j][0]))
                 else:
                     T[j + 1][i] = T[j][i] + alpha * self.dt * (((1 / (2 * self.r[i] * self.dr)) * (T[j][i + 1] - T[j][i - 1])) + ((T[j][i + 1] + T[j][i - 1] - 2 * T[j][i]) /
                                                                                                                                   (self.dr ** 2)))
