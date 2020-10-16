@@ -250,4 +250,95 @@ ax1.legend()
 plt.show()
 
 print(T) 
+
+
+
+###########################
+
+ def run_analysis_explicit(self):
+        # Radial coordinate
+        self.r_1 = 0.11  # Radial position of insulation beginning [m]
+        self.r_2 = self.r_1 + self.insulator_thk  # Radial position of insulation/casing interface [m]
+        self.r_3 = self.r_2 + self.case_thk  # Radial position of casing end [m]
+        self.dr = (self.r_3 - self.r_1) / self.sectionsr  # r variation [m]
+        self.nr = self.sectionsr + 1  # Nº of radial points
+
+        # Time
+        self.dt = self.t / self.nt  # Time variation [s]
+
+        # we have to set the initial and boundary conditions
+        self.r = [self.r_1 + i * self.dr for i in range(self.nr)]  # Defining the r vector
+
+        d_insulator = self.alpha_insulator * (self.dt / (self.dr ** 2))  # Insulation Fourier number
+        d_case = self.alpha_case * (self.dt / (self.dr ** 2))  # Casing Fourier number
+
+
+        if d_insulator > 0.5 or d_case > 0.5:
+            print('Stability criteria was not achieved, the following values must be less than 0.5')
+            print('Fourier number case: ', d_case)
+            print('Fourier number insulator: ', d_insulator)
+            print('Try to decrease the radial steps')
+            return 0
+
+        # Height coordinate
+        z = 1  # Height of combustion chamber [m]
+        sectionsz = 1  # Nº of sections beewtween 0 and z
+        self.dz = z / sectionsz  # z variation [m]
+        nz = sectionsz + 2  # Nº of z points
+
+        T = np.zeros([self.nt, self.nr, nz])
+        for i in range(self.nr):
+            for j in range(nz):
+                T[0][i][j] = Ta
+
+        # Calculating the T-matrix
+        for j in range(self.nt - 1):
+            for i in range(self.nr):
+                for l in range(nz):
+                    if self.r[i] <= self.r_2:  # Set insulation material
+                        alpha = self.alpha_insulator
+                        rho = self.rho_insulator
+                        cp = self.cp_insulator
+                        k = self.k_insulator
+                    if self.r[i] > self.r_2:  # Set casing material
+                        alpha = self.alpha_case
+                        rho = self.rho_case
+                        cp = self.cp_case
+                        k = self.k_case
+                    if i == self.nr - 1:
+                        if l == nz - 1:  # r end and z end
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i][l] - 2 * T[j][i][l - 1] + T[j][i][l - 2]) / (self.dz ** 2)) +
+                                            ((T[j][i][l] - T[j][i - 1][l]) / (self.r[i] * self.dr))+((T[j][i][l] + T[j][i - 2][l] - 2 * T[j][i - 1][l]) / (self.dr ** 2)))
+                        elif l == 0:  # r end and z start
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i][l] - 2 * T[j][i][l + 1] + T[j][i][l + 2]) / (self.dz ** 2)) + (
+                                            (T[j][i][l] - T[j][i - 1][l]) / (self.r[i] * self.dr)) + ((T[j][i][l] + T[j][i - 2][l] - 2 * T[j][i - 1][l]) / (self.dr ** 2)))
+                        else:  # r end and z middle
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i][l + 1] - 2 * T[j][i][l] + T[j][i][l - 1]) / (self.dz ** 2)) + (
+                                            (T[j][i][l] - T[j][i - 1][l]) / (self.r[i] * self.dr)) + ((T[j][i][l] + T[j][i - 2][l] - 2 * T[j][i - 1][l]) / (self.dr ** 2)))
+                    elif i == 0:
+                        if l == nz - 1:  # r start and z end
+                            T[j + 1][i][l] = T[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) * (self.h_m * self.dz * (Tc - T[j][i][l]) + k * self.dz * (
+                                            T[j][i + 1][l] - T[j][i][l]) / self.dr + k * self.dr * (T[j][i][l] - T[j][i][l - 1]) / (2 * self.dz))
+                        elif l == 0:  # r start and z start
+                            T[j + 1][i][l] = T[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) * (self.h_m * self.dz * (Tc - T[j][i][l]) + k * self.dz * (
+                                            T[j][i + 1][l] - T[j][i][l]) / self.dr + k * self.dr * (T[j][i][l + 1] - T[j][i][l]) / (2 * self.dz))
+                        else:  # r start and z middle
+                            T[j + 1][i][l] = T[j][i][l] + ((2 * self.dt) / (rho * cp * self.dr * self.dz)) * (
+                                        self.h_m * self.dz * (Tc - T[j][i][l]) + k * self.dz * (T[j][i + 1][l] - T[j][i][l]) / self.dr + k * self.dr *
+                                        (T[j][i][l + 1] - T[j][i][l - 1]) / (2 * self.dz))
+                    else:
+                        if l == nz - 1:  # r middle and z end
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i + 1][l] - T[j][i - 1][l]) / (2 * self.r[i] * self.dr)) + ((T[j][i + 1][l] +
+                                                                               T[j][i - 1][l - 2] - 2 * T[j][i][l]) / (self.dr ** 2)) +
+                                                                             ((T[j][i][l] + T[j][i][l - 2] - 2 * T[j][i][l - 1]) / (self.dz ** 2)))
+                        elif l == 0:  # r middle and z start
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i + 1][l] - T[j][i - 1][l]) / (2 * self.r[i] * self.dr)) + ((T[j][i + 1][l] +
+                                                                              T[j][i - 1][l - 2] - 2 * T[j][i][l]) / (self.dr ** 2)) +
+                                                                             ((T[j][i][l] + T[j][i][l + 2] - 2 * T[j][i][l + 1]) / (self.dz ** 2)))
+                        else:  # r middle and z middle
+                            T[j + 1][i][l] = T[j][i][l] + alpha * self.dt * (((T[j][i + 1][l] - T[j][i - 1][l]) / (2 * self.r[i] * self.dr)) + ((T[j][i + 1][l] +
+                                                                            T[j][i - 1][l - 2] - 2 * T[j][i][l]) / (self.dr ** 2)) + (
+                                                                            (T[j][i][l + 1] + T[j][i][l - 1] - 2 * T[j][i][l]) / (self.dz ** 2)))
+        return T
+
 """
