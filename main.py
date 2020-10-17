@@ -167,7 +167,11 @@ class bulkhead(object):
         self.nz_ex = self.nz + 1  # Nº of z points
 
         # Time
-        self.dt = self.t / self.nt_ex  # Time variation [s]
+        dt_case = self.k_case*(self.dz**2 + self.dr**2) / (4*self.alpha_case*(self.k_case + self.h_m))
+        dt_insulator = self.k_insulator*(self.dz**2 + self.dr**2) / (4*self.alpha_insulator*(self.k_insulator + self.h_m))
+        print('dt_case: ', dt_case)
+        print('dt_insu: ', dt_insulator)
+        self.dt = min(dt_case, dt_insulator)  # Time variation [s]
 
         Fo_case = self.alpha_case * self.dt / (self.dz * self.dz + self.dr * self.dr)
         Fo_insulator = self.alpha_insulator * self.dt / (self.dz * self.dz + self.dr * self.dr)
@@ -194,7 +198,7 @@ class bulkhead(object):
         # Calculating the explicit T-matrix
         for j in range(self.nt_ex - 1):
             for i in range(self.nr_ex):
-                for l in range(self.nz_ex-1):
+                for l in range(self.nz_ex):
                     if self.z[i] <= self.z_2:  # Set insulation material
                         alpha = self.alpha_insulator
                         rho = self.rho_insulator
@@ -212,8 +216,8 @@ class bulkhead(object):
                                                                          ((T_explicit[j][i - 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i - 1][l]) / (self.dr ** 2)) +
                                                                          ((T_explicit[j][i][l - 2] + T_explicit[j][i][l] - 2 * T_explicit[j][i][l - 1]) / (self.dz ** 2)))
                         elif l == 0:  # r end and z start
-                            T_explicit[j + 1][i][l] = (2 * self.h_m * self.dt * self.Tc) / (rho * cp * self.dz) + (1 + (k * self.dt) / (rho * cp * self.dr * self.dr) - (k * self.dt) /
-                                                      (rho * cp * self.dz * self.dz) - (2 * self.h_m * self.dt) / (rho * cp * self.dz)) * T_explicit[j][i][l] + (-k * self.dt / (rho * cp * self.dr * self.dr)) * T_explicit[j][i - 1][l] + \
+                            T_explicit[j + 1][i][l] = (2 * self.h_m * self.dt * self.Tc) / (rho * cp * self.dz) + (1 + ((k * self.dt) / (rho * cp * self.dr * self.dr)) - ((k * self.dt) /
+                                                      (rho * cp * self.dz * self.dz)) - ((2 * self.h_m * self.dt) / (rho * cp * self.dz))) * T_explicit[j][i][l] + (-k * self.dt / (rho * cp * self.dr * self.dr)) * T_explicit[j][i - 1][l] + \
                                                         (k * self.dt / (rho * cp * self.dz * self.dz)) * T_explicit[j][i][l + 1]
                         else:  # r end and z middle
                             T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
@@ -221,7 +225,7 @@ class bulkhead(object):
                                                                          ((T_explicit[j][i - 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i - 1][l]) / (self.dr ** 2)) +
                                                                          ((T_explicit[j][i][l + 1] + T_explicit[j][i][l - 1] - 2 * T_explicit[j][i][l]) / (self.dz ** 2)))
                     elif i == 0:
-                        if l == self.nz - 1:  # r start and z end
+                        if l == self.nz_ex - 1:  # r start and z end
                             T_explicit[j + 1][i][l] = T_explicit[j][i][l] + \
                                                       alpha * self.dt * (((T_explicit[j][i + 1][l] - T_explicit[j][i][l]) / (self.r[i] * self.dr)) +
                                                                          ((T_explicit[j][i + 2][l] + T_explicit[j][i][l] - 2 * T_explicit[j][i + 1][l]) / (self.dr ** 2)) +
@@ -290,9 +294,9 @@ if __name__ == "__main__":
     """
     # BULKHEAD ANALYSIS
 
-    t_steps_ex = 500
-    z_steps_ex = 200
-    r_steps_ex = 500
+    t_steps_ex = 50
+    z_steps_ex = 2000
+    r_steps_ex = 50
     insulator_thk_ex = 0.003
     z_thk_ex = 0.01
     r_ex_ex = 0.11
