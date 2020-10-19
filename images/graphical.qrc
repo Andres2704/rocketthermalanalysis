@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="images">
+    <file>lasclogo.png</file>
+    <file>logo_horizontal.png</file>
+    <file>logo-Recovered.png</file>
+  </qresource>
+</RCC>
