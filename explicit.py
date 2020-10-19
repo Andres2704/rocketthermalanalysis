@@ -54,6 +54,7 @@ Tc = 1600  #Chamber temperature [K] -> This is a given value, yet this is not th
 #we have to set the initial/boundary contitions
 r = [r_1 + i * dr for i in range(nr)]
 z = [z_1 + i * dr for i in range(nz)]
+
 """""
 print(dr)
 print(dz)
@@ -74,7 +75,6 @@ print((rho_case*cp_case*dz**2)/(k_case+2*h_m*dz))
 print("End z and Middle r")
 print((dr**2)*(dz**2)/(alpha_case*(2*dz**2-dr**2)))
 """""
-
 
 T = np.zeros([nt, nr, nz])
 for i in range(nr):
