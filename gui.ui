@@ -23,7 +23,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>771</width>
+     <width>781</width>
      <height>531</height>
     </rect>
    </property>
@@ -34,7 +34,7 @@
     <attribute name="title">
      <string>Motor case</string>
     </attribute>
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="explicit_gp">
      <property name="geometry">
       <rect>
        <x>390</x>
@@ -46,7 +46,7 @@
      <property name="title">
       <string>Inputs [Explicit Method]:</string>
      </property>
-     <widget class="QGroupBox" name="groupBox_6">
+     <widget class="QGroupBox" name="casematerial_ex_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -75,7 +75,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_7">
+     <widget class="QGroupBox" name="linermaterial_ex_gp">
       <property name="geometry">
        <rect>
         <x>180</x>
@@ -104,7 +104,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_8">
+     <widget class="QGroupBox" name="properties_explicit_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -277,47 +277,24 @@
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="label_18">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>180</y>
-         <width>141</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Time steps:</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="t_steps_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>200</y>
-         <width>141</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_19">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>230</y>
+         <y>229</y>
          <width>141</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>Burn time:</string>
+        <string>Burn time  [s]:</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="burn_time_2">
+      <widget class="QLineEdit" name="burn_timeexp">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>250</y>
+         <y>249</y>
          <width>141</width>
          <height>20</height>
         </rect>
@@ -336,9 +313,32 @@
         <string>Run analysis</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_20">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>180</y>
+         <width>141</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Time steps  [s]:</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="t_steps_exp">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>200</y>
+         <width>141</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
     </widget>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="implicit_gp">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -350,7 +350,7 @@
      <property name="title">
       <string>Inputs [Implicit Method]:</string>
      </property>
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="casematerial_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -379,7 +379,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_3">
+     <widget class="QGroupBox" name="linermaterial_gp">
       <property name="geometry">
        <rect>
         <x>180</x>
@@ -408,7 +408,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_4">
+     <widget class="QGroupBox" name="properties_implicit_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -608,20 +608,20 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>230</y>
+         <y>229</y>
          <width>141</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>Burn time:</string>
+        <string>Burn time [s]:</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="burn_time">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>250</y>
+         <x>11</x>
+         <y>249</y>
          <width>141</width>
          <height>20</height>
         </rect>
@@ -631,7 +631,7 @@
        <property name="geometry">
         <rect>
          <x>160</x>
-         <y>242</y>
+         <y>240</y>
          <width>161</width>
          <height>31</height>
         </rect>
@@ -673,7 +673,7 @@
     <attribute name="title">
      <string>Bulkhead</string>
     </attribute>
-    <widget class="QGroupBox" name="groupBox_9">
+    <widget class="QGroupBox" name="bulkhead_gp">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -685,7 +685,7 @@
      <property name="title">
       <string>Inputs [Explicit Method]:</string>
      </property>
-     <widget class="QGroupBox" name="groupBox_13">
+     <widget class="QGroupBox" name="bulkhead_material_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -695,7 +695,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Blukhead Materials</string>
+       <string>Bulkhead Materials</string>
       </property>
       <widget class="QRadioButton" name="material_bulk">
        <property name="geometry">
@@ -714,7 +714,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_14">
+     <widget class="QGroupBox" name="liner_material_gp">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -743,7 +743,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_15">
+     <widget class="QGroupBox" name="properties_bulk_gp">
       <property name="geometry">
        <rect>
         <x>350</x>
