@@ -15,8 +15,8 @@
   </property>
   <property name="windowIcon">
    <iconset resource="images/graphical.qrc">
-    <normaloff>:/images/logo-Recovered.png</normaloff>
-    <normalon>:/images/logo-Recovered.png</normalon>:/images/logo-Recovered.png</iconset>
+    <normaloff>:/images/logo_fih.jpg</normaloff>
+    <normalon>:/images/logo_fih.jpg</normalon>:/images/logo_fih.jpg</iconset>
   </property>
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
@@ -85,7 +85,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Liner Material</string>
+       <string>Insulator materials</string>
       </property>
       <widget class="QRadioButton" name="material_insulator_2">
        <property name="geometry">
@@ -389,7 +389,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Liner Material</string>
+       <string>Insulator materials</string>
       </property>
       <widget class="QRadioButton" name="material_insulator">
        <property name="geometry">
@@ -724,7 +724,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Liner Material</string>
+       <string>Insulator materials</string>
       </property>
       <widget class="QRadioButton" name="material_insulator_4">
        <property name="geometry">
@@ -749,7 +749,7 @@
         <x>350</x>
         <y>30</y>
         <width>381</width>
-        <height>281</height>
+        <height>291</height>
        </rect>
       </property>
       <property name="title">
@@ -773,7 +773,7 @@
         <rect>
          <x>10</x>
          <y>50</y>
-         <width>141</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -796,7 +796,7 @@
         <rect>
          <x>10</x>
          <y>100</y>
-         <width>141</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -819,15 +819,18 @@
         <rect>
          <x>10</x>
          <y>150</y>
-         <width>141</width>
+         <width>161</width>
          <height>20</height>
         </rect>
+       </property>
+       <property name="tabletTracking">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QLabel" name="label_32">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>30</y>
          <width>121</width>
          <height>16</height>
@@ -840,9 +843,9 @@
       <widget class="QLineEdit" name="r_steps_4">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>50</y>
-         <width>151</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -850,9 +853,9 @@
       <widget class="QLineEdit" name="hm_3">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>100</y>
-         <width>151</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -860,7 +863,7 @@
       <widget class="QLabel" name="label_33">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>80</y>
          <width>141</width>
          <height>16</height>
@@ -873,7 +876,7 @@
       <widget class="QLabel" name="label_34">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>130</y>
          <width>141</width>
          <height>16</height>
@@ -886,9 +889,9 @@
       <widget class="QLineEdit" name="Ta_3">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>150</y>
-         <width>151</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -896,7 +899,7 @@
       <widget class="QLabel" name="label_35">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>180</y>
          <width>141</width>
          <height>16</height>
@@ -909,9 +912,9 @@
       <widget class="QLineEdit" name="Tc_3">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>200</y>
-         <width>151</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -934,7 +937,7 @@
         <rect>
          <x>10</x>
          <y>250</y>
-         <width>141</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -942,7 +945,7 @@
       <widget class="QPushButton" name="run_bulk">
        <property name="geometry">
         <rect>
-         <x>160</x>
+         <x>200</x>
          <y>240</y>
          <width>161</width>
          <height>31</height>
@@ -957,7 +960,7 @@
         <rect>
          <x>10</x>
          <y>200</y>
-         <width>141</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -1008,7 +1011,7 @@
   <widget class="QLabel" name="tau_logo">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>150</x>
      <y>550</y>
      <width>311</width>
      <height>121</height>
@@ -1021,7 +1024,7 @@
   <widget class="QLabel" name="lasc_logo">
    <property name="geometry">
     <rect>
-     <x>500</x>
+     <x>460</x>
      <y>510</y>
      <width>151</width>
      <height>191</height>
@@ -1032,6 +1035,49 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>material_case</tabstop>
+  <tabstop>material_insulator</tabstop>
+  <tabstop>material_case_2</tabstop>
+  <tabstop>material_insulator_2</tabstop>
+  <tabstop>insulator_thk_2</tabstop>
+  <tabstop>case_thk_2</tabstop>
+  <tabstop>ri_2</tabstop>
+  <tabstop>t_steps_exp</tabstop>
+  <tabstop>burn_timeexp</tabstop>
+  <tabstop>r_steps_2</tabstop>
+  <tabstop>hm_2</tabstop>
+  <tabstop>Ta_2</tabstop>
+  <tabstop>Tc_2</tabstop>
+  <tabstop>run_explicit</tabstop>
+  <tabstop>insulator_thk</tabstop>
+  <tabstop>case_thk</tabstop>
+  <tabstop>ri</tabstop>
+  <tabstop>t_steps</tabstop>
+  <tabstop>burn_time</tabstop>
+  <tabstop>r_steps</tabstop>
+  <tabstop>hm</tabstop>
+  <tabstop>Ta</tabstop>
+  <tabstop>Tc</tabstop>
+  <tabstop>run_implicit</tabstop>
+  <tabstop>generate_output</tabstop>
+  <tabstop>generate_graphs</tabstop>
+  <tabstop>material_bulk</tabstop>
+  <tabstop>material_insulator_4</tabstop>
+  <tabstop>insulator_thk_4</tabstop>
+  <tabstop>z</tabstop>
+  <tabstop>ri_4</tabstop>
+  <tabstop>radius_outer</tabstop>
+  <tabstop>burn_time_4</tabstop>
+  <tabstop>r_steps_4</tabstop>
+  <tabstop>hm_3</tabstop>
+  <tabstop>Ta_3</tabstop>
+  <tabstop>Tc_3</tabstop>
+  <tabstop>run_bulk</tabstop>
+  <tabstop>generate_output_2</tabstop>
+  <tabstop>generate_graphs_2</tabstop>
+ </tabstops>
  <resources>
   <include location="images/graphical.qrc"/>
  </resources>
