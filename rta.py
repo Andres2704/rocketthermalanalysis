@@ -722,9 +722,6 @@ class bulkhead(myWindows):
         T_final = T[nt - 1, nr - 1, ::]
         self.bulkhead_points = z
 
-        print(T)
-        print(T_final)
-
         return T, T_final
 
 
