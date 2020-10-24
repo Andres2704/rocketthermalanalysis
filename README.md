@@ -28,7 +28,7 @@ On the second tab you will be able to simulate a 2D temperature distribution alo
 
 All the three analysis can be exported as output txt file which you can easily import to excel or other sheet editor and also you can generate plots of the results. 
 
-All the mathematical model and validation of the software you can find here
+For all the mathematical model of the software you can find here
 
 ### Source:
 
