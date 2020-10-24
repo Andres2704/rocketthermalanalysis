@@ -13,7 +13,7 @@ Rocket Thermal Analysis(RTA) is an open-source thermal analysis software develop
 
 *Future features*:
 - Generate a detailed outuput file for the bulkhead
-- Create an a pop-up window to build specific graphs
+- Create a pop-up window to build specific graphs
 - .xlsx file with the results
 
 ### How to use RTA(Rocket Thermal Analysis):
