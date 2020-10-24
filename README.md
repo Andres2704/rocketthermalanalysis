@@ -4,7 +4,7 @@
 * Andres Benoit (Aerospace Engineering Undegraduate Student - UFSM) - andres.benoit7@gmail.com
 
 ### Overview
-Rocket Thermal Analysis(RTA) is an open-source thermal analysis software developed by Tau Rocket Team for the Latin American Space Challenge Cooperation 2020. The software estimates the temperature distribution along the case and bulkhead rocket motor.
+Rocket Thermal Analysis(RTA) is an open-source thermal analysis software developed by Tau Rocket Team for the Latin American Space Challenge Cooperation 2020. The software estimates the temperature distribution along the case and bulkhead of a rocket motor.
 
 *Current Features*:
 - Temperature distribution along the case by implicit and explicit methods.
