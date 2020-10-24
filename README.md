@@ -17,7 +17,7 @@ Rocket Thermal Analysis(RTA) is an open-source thermal analysis software develop
 - .xlsx file with the results
 
 ### How to use RTA(Rocket Thermal Analysis):
-* You can download the executable file [here.](https://drive.google.com/file/d/1qHwhARq-330akTIG7l6z-7JiFtZTnFGc/view?usp=sharing).
+* You can download the executable file [here](https://drive.google.com/file/d/1qHwhARq-330akTIG7l6z-7JiFtZTnFGc/view?usp=sharing).
 Once you have opened RTA the main window will be something like this:
 
 ![alt text](https://github.com/Andres2704/rocketthermalanalysis/blob/master/images/Capturar.PNG)
@@ -29,3 +29,10 @@ On the second tab you will be able to simulate a 2D temperature distribution alo
 All of three analysis can be exported as output txt file which you can easily import to excel or other sheet editor and also you can generate plots of the results. 
 
 All the mathematical model and validation of the software you can find here
+
+### Source:
+
+The main UI was developed with PyQt5 library and the following libraries was also used:
+* Numpy
+* Matplotlib
+* Pandas
