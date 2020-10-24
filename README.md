@@ -15,4 +15,6 @@ The main windows is destinated to analyse the 1D temperature distribution along 
 
 On the second tab you will be able to simulate a 2D temperute distribution along the bulkhead's motor. This is a slow method since is explicit and bidimensional, so be patient.
 
-All of three analysis can be exported as output txt file which you can easly import to excel or other sheet editor and also you can generate a graphical resourses.
+All of three analysis can be exported as output txt file which you can easly import to excel or other sheet editor and also you can generate a graphical resourses. 
+
+All the mathematical model and validation of the software you can find here
