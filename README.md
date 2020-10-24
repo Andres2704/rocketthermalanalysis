@@ -32,7 +32,7 @@ All the mathematical model and validation of the software you can find here
 
 ### Source:
 
-The main UI was developed with PyQt5 library and the following libraries was also used:
+All the code were implemente in Python and the main UI was developed with PyQt5 library and the following libraries was also used:
 * Numpy
 * Matplotlib
 * Pandas
