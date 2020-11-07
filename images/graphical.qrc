@@ -2,6 +2,7 @@
   <qresource prefix="images">
     <file>logo_fih.jpg</file>
     <file>lasclogo.png</file>
+    <file>equations.PNG</file>
     <file>logo_horizontal.png</file>
     <file>logo-Recovered.png</file>
   </qresource>

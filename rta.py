@@ -29,6 +29,7 @@ class myWindows(QtWidgets.QMainWindow):
             self.generate_graph_case_function)  # Generate graphs for case analysis
         self.generate_graph_bulk = self.ui.generate_graphs_2.clicked.connect(
             self.generate_graph_bulk_function)  # Generate graphs for bulkhead analysis
+        self.run_hmcoef_button = self.ui.hm_button.clicked.connect(self.run_hm_function)
 
     def display_errors(self, text, message):
         """
@@ -80,6 +81,26 @@ class myWindows(QtWidgets.QMainWindow):
         error.setInformativeText(message)
         error.setWindowTitle('Warning')
         error.exec_()
+
+    def run_hm_function(self):
+        """
+         This method is used when the user press to calculate the convective coefficient.
+
+         :return: Returns the resultant convective coefficient
+         """
+        mp = float(self.ui.propellant_mass.text())*2.20462
+        ri = (float(self.ui.ri_hm.text())*39.3701/2)
+        t = float(self.ui.burn_time_hm.text())
+        L = float(self.ui.motor_length.text())*39.3701
+        cp = float(self.ui.propellant_cp.text())*0.00023884589662749592
+
+        G = ((mp*12*12)/(np.pi*ri*ri*t))*3600
+
+        hm = (0.024*cp*(G**0.8)/((ri*2)**0.2))*(1 + ((ri*2/L)**0.7))*5.6779
+
+        self.ui.hm_results.setText(str(hm))
+
+        return hm
 
     def run_implicit_function(self):
         """
@@ -721,6 +742,10 @@ class bulkhead(myWindows):
                                  'The analysis has been finished, now you can generate your output file and graphical resources')
         T_final = T[nt - 1, nr - 1, ::]
         self.bulkhead_points = z
+
+        print(T)
+        print('DAQUI PRA BAIXO É TFINAL')
+        print(T_final)
 
         return T, T_final
 
