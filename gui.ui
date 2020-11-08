@@ -1144,9 +1144,9 @@
         <widget class="QPushButton" name="hm_button">
          <property name="geometry">
           <rect>
-           <x>200</x>
+           <x>120</x>
            <y>450</y>
-           <width>161</width>
+           <width>101</width>
            <height>23</height>
           </rect>
          </property>
@@ -1159,7 +1159,7 @@
           <rect>
            <x>10</x>
            <y>450</y>
-           <width>171</width>
+           <width>101</width>
            <height>20</height>
           </rect>
          </property>
@@ -1175,6 +1175,19 @@
          </property>
          <property name="text">
           <string>Result [W/m^2-K]:</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="hm_pdfreport">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>450</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Generate PDF report</string>
          </property>
         </widget>
        </widget>
@@ -1230,7 +1243,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>This formula is in imperial units, so every value needs to be converted</string>
+      <string>The specific heat of common propellants:</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_28">
@@ -1243,7 +1256,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>to imperial units before it can be used. All the  information  about  this</string>
+      <string>KNSU 65/35: 1690 J/Kg-K                      KNSB 65/35: 1740 J/Kg-K</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_31">
@@ -1347,7 +1360,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>equation are in: Mark’s Standard Handbook for Mechanical Engineers.</string>
+      <string>KNDX 65/35: 1700 J/Kg-K</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_44">
@@ -1360,7 +1373,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>T. B. I. Eugene A. Avallone.</string>
+      <string>See more in: Mark’s Standard Handbook for Mechanical Engineers.</string>
      </property>
     </widget>
    </widget>
