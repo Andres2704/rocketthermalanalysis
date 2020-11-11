@@ -6,7 +6,7 @@ import numpy as np
 import datetime, os
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from reportlab.pdfgen import canvas
 
 class myWindows(QtWidgets.QMainWindow):
     def __init__(self):
@@ -89,19 +89,31 @@ class myWindows(QtWidgets.QMainWindow):
 
          :return: Returns the resultant convective coefficient
          """
-        mp = float(self.ui.propellant_mass.text())*2.20462
-        ri = (float(self.ui.ri_hm.text())*39.3701/2)
-        t = float(self.ui.burn_time_hm.text())
-        L = float(self.ui.motor_length.text())*39.3701
-        cp = float(self.ui.propellant_cp.text())*0.00023884589662749592
+        try:
+            mp = float(self.ui.propellant_mass.text())*2.20462
+            ri = (float(self.ui.ri_hm.text())*39.3701/2)
+            t = float(self.ui.burn_time_hm.text())
+            L = float(self.ui.motor_length.text())*39.3701
+            cp = float(self.ui.propellant_cp.text())*0.00023884589662749592
 
-        G = ((mp*12*12)/(np.pi*ri*ri*t))*3600
+            data = [mp, ri, t, L, cp]
 
-        hm = (0.024*cp*(G**0.8)/((ri*2)**0.2))*(1 + ((ri*2/L)**0.7))*5.6779
+            for i in data:
+                if i == '':
+                    self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
+                    return 0
 
-        self.ui.hm_results.setText(str(hm))
+            G = ((mp*12*12)/(np.pi*ri*ri*t))*3600
 
-        return hm
+            self.hm = (0.024*cp*(G**0.8)/((ri*2)**0.2))*(1 + ((ri*2/L)**0.7))*5.6779
+
+            self.ui.hm_results.setText(str(self.hm))
+
+            return self.hm
+        except:
+            self.display_errors('Memory error',
+                                'As a result from your data a memory error has result, please check it. Also, verify if you use . instead , for numbers.')
+            return 1
 
     def run_implicit_function(self):
         """
@@ -114,6 +126,7 @@ class myWindows(QtWidgets.QMainWindow):
             # Saving the data provided by the user
             material_liner = self.ui.material_insulator.text()
             material_case = self.ui.material_case.text()
+            coast = self.ui.t_total_implicit.text()
             insulator_thk = self.ui.insulator_thk.text()
             case_thk = self.ui.case_thk.text()
             ri = self.ui.ri.text()
@@ -138,7 +151,7 @@ class myWindows(QtWidgets.QMainWindow):
 
             # Verify if some field is empty
             self.data = [material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
-                         Ta, Tc]
+                         Ta, Tc, coast]
             for i in self.data:
                 if i == '':
                     self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
@@ -149,7 +162,7 @@ class myWindows(QtWidgets.QMainWindow):
             # Calling the solution method
             self.case_temperature = motor_case(material_case, material_liner, insulator_thk, case_thk,
                                                ri, t_steps, burn_time, r_steps,
-                                               hm, Ta, Tc,
+                                               hm, Ta, Tc, coast,
                                                1)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
             return 1
         except:
@@ -170,6 +183,7 @@ class myWindows(QtWidgets.QMainWindow):
             material_liner = self.ui.material_insulator_2.text()
             material_case = self.ui.material_case_2.text()
             insulator_thk = self.ui.insulator_thk_2.text()
+            coast = self.ui.t_total_explicit.text()
             case_thk = self.ui.case_thk_2.text()
             ri = self.ui.ri_2.text()
             burn_time = self.ui.burn_timeexp.text()
@@ -189,7 +203,7 @@ class myWindows(QtWidgets.QMainWindow):
 
             # Verify if some field is empty
             self.data = [material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
-                         Ta, Tc]
+                         Ta, Tc, coast]
             for i in self.data:
                 if i == '':
                     self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
@@ -199,7 +213,7 @@ class myWindows(QtWidgets.QMainWindow):
             # Calling the solution method
             self.case_temperature = motor_case(material_case, material_liner, insulator_thk, case_thk,
                                                ri, t_steps, burn_time, r_steps,
-                                               hm, Ta, Tc, 2)
+                                               hm, Ta, Tc, coast, 2)
             return 1
         except:
             self.display_errors('Memory error',
@@ -217,12 +231,12 @@ class myWindows(QtWidgets.QMainWindow):
             # Saving the text provided by the user
             material_liner = self.ui.material_insulator_4.text()
             material_case = self.ui.material_bulk.text()
+            coast = self.ui.t_total_bulkhead.text()
             insulator_thk = self.ui.insulator_thk_4.text()
             bulkhead_thk = self.ui.z.text()
             r_inner = self.ui.ri_4.text()
             r_outer = self.ui.radius_outer.text()
             burn_time = self.ui.burn_time_4.text()
-            r_steps = self.ui.r_steps_4.text()
             hm = self.ui.hm_3.text()
             Ta = self.ui.Ta_3.text()
             Tc = self.ui.Tc_3.text()
@@ -234,7 +248,7 @@ class myWindows(QtWidgets.QMainWindow):
 
             # Verify if some field is empty
             self.data = [material_case, material_liner, insulator_thk, bulkhead_thk, r_inner, r_outer, burn_time, r_steps,
-                    hm, Ta, Tc]
+                    hm, Ta, Tc, coast]
             for i in self.data:
                 if i == '':
                     self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
@@ -242,7 +256,7 @@ class myWindows(QtWidgets.QMainWindow):
             self.method = 'Explicit'
             # Calling the solution method
             self.bulkhead_temperature = bulkhead(material_case, material_liner, insulator_thk, bulkhead_thk, r_inner,
-                                                 r_outer, burn_time, r_steps, hm, Ta, Tc)
+                                                 r_outer, burn_time, r_steps, hm, Ta, Tc, coast)
 
         except:
             self.display_errors('Memory error',
@@ -360,27 +374,27 @@ class myWindows(QtWidgets.QMainWindow):
         else:
             # Finding the case section
             r_a = np.array(self.case_temperature.r)
-            locals = [r_a >= self.case_temperature.r_2]
-            r_a = r_a[tuple(locals)]
+            locals = [r_a >= self.case_temperature.r_2]  # 0 1
+            r_a = r_a[tuple(locals)]                     # at case domain
 
-            # Plot along the liner and the case section
+            # Plot along the liner and the case section at total time
             plt.figure(1, figsize=(10, 20))
             plt.plot(self.case_temperature.r, self.case_temperature.Values, 'b--', linewidth=2,
                      label='Insulator section')
-            plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'r-+', linewidth=2,
+            plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'r', linewidth=2,
                      label='Case section')
             plt.title('Temperature distribution - Insulator thickness: ' + str(
-                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.t) + 's)')
+                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
             plt.xlabel('Radial position [m]')
             plt.ylabel('Temperature [K]')
             plt.legend(title='Legend')
 
-            # Plot only case section
+            # Plot only case section at total time
             plt.figure(2, figsize=(10, 20))
             plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'k', linewidth=2,
                      label='Case section', marker="D", markerfacecolor='r', markeredgecolor='r', markersize=4)
             plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
-                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.t) + 's)')
+                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
             plt.xlabel('Radial position [m]')
             plt.ylabel('Temperature [K]')
             plt.legend(title='Legend')
@@ -390,8 +404,7 @@ class myWindows(QtWidgets.QMainWindow):
             T0 = self.case_temperature.T[0, self.case_temperature.r.index(r_a[0])::]  # T at time zero
             T1 = self.case_temperature.T[round(metric / 4), self.case_temperature.r.index(r_a[0])::]  # T at 25% of t
             T2 = self.case_temperature.T[round(metric / 2), self.case_temperature.r.index(r_a[0])::]  # T at 50% of t
-            T3 = self.case_temperature.T[round(metric * (3 / 4)),
-                 self.case_temperature.r.index(r_a[0])::]  # T at 75% of t
+            T3 = self.case_temperature.T[round(metric * (3 / 4)), self.case_temperature.r.index(r_a[0])::]  # T at 75% of t
             T4 = self.case_temperature.T[metric - 1, self.case_temperature.r.index(r_a[0])::]  # T at 100% of t
 
             plt.figure(3, figsize=(10, 20))
@@ -402,6 +415,28 @@ class myWindows(QtWidgets.QMainWindow):
             plt.plot(r_a, T4, label='t = ' + str(self.case_temperature.t * 1))
             plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
                 self.case_temperature.insulator_thk * 1000) + ' mm')
+            plt.xlabel('Radial position [m]')
+            plt.ylabel('Temperature [K]')
+            plt.legend(title='Legend')
+
+            # Plot along the liner and the case section at burn time
+            plt.figure(4, figsize=(10, 20))
+            plt.plot(self.case_temperature.r, self.case_temperature.Values_nt, 'b--', linewidth=2,
+                     label='Insulator section')
+            plt.plot(r_a, self.case_temperature.Values_nt[self.case_temperature.r.index(r_a[0])::], 'r-+', linewidth=2,
+                     label='Case section')
+            plt.title('Temperature distribution - Insulator thickness: ' + str(
+                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.t) + 's)')
+            plt.xlabel('Radial position [m]')
+            plt.ylabel('Temperature [K]')
+            plt.legend(title='Legend')
+
+            # Plot along the liner and the case section at total time
+            plt.figure(5, figsize=(10, 20))
+            plt.plot(r_a, self.case_temperature.Values_nt[self.case_temperature.r.index(r_a[0])::], 'r-+', linewidth=2,
+                     label='Case section')
+            plt.title('Temperature distribution - Insulator thickness: ' + str(
+                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.t) + 's)')
             plt.xlabel('Radial position [m]')
             plt.ylabel('Temperature [K]')
             plt.legend(title='Legend')
@@ -431,13 +466,116 @@ class myWindows(QtWidgets.QMainWindow):
             plt.show()
 
     def generate_pdf_hm(self):
-        date = datetime.datetime.now()
-        filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))
-        title = 'Heat Convective Coefficient Report - By Rocket Thermal Analysis'
-        subTitle = '''The convective heat transfer coefficient was calculated using the formula shown in
-                      Equation 1, [1]. The equation considers the mass flux (G) as average, it is calculated
-                      as in Equations below.'''
-        image = 'images/equations.PNG'
+            date = datetime.datetime.now()
+            filename = 'mydoc.pdf'
+            #filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))+'.pdf'
+
+            # defining the header text
+            title = 'Heat Convective Coefficient Report - By Rocket Thermal Analysis'
+            header_text = [' The convective heat transfer coefficient was calculated using the formula shown Equation 1, [1].',
+                          'The equation considers the mass flux (G) as average, it is calculated as in Equations below.']
+
+            image = 'images/equations.PNG'
+            header_text2 = ['This formula is in imperial units, so every value needs to be converted to imperial units before',
+                             'it can be used. The inputs in imperial and S.I. units can be seen in table below.']
+
+            # calculating hm again
+            mp = float(self.ui.propellant_mass.text()) * 2.20462
+            ri = (float(self.ui.ri_hm.text()) * 39.3701 / 2)
+            t = float(self.ui.burn_time_hm.text())
+            L = float(self.ui.motor_length.text()) * 39.3701
+            cp = float(self.ui.propellant_cp.text()) * 0.00023884589662749592
+            G = ((mp * 12 * 12) / (np.pi * ri * ri * t)) * 3600
+            hm = (0.024 * cp * (G ** 0.8) / ((ri * 2) ** 0.2)) * (1 + ((ri * 2 / L) ** 0.7)) * 5.6779
+
+            # creating the main table
+            table_index = ['Propellant Mass', 'Inner Diameter', 'Burn Time', 'Motor Lenght', 'Propellant Specific Heat']
+            si = [float(self.ui.propellant_mass.text()), float(self.ui.ri_hm.text()), float(self.ui.burn_time_hm.text()),
+                  float(self.ui.motor_length.text()), float(self.ui.propellant_cp.text())]
+            imperial = [mp, ri*2, t, L, cp]
+            table_column = 'SI Imperial'
+            table_index = ['Propellant Mass', 'Inner Diameter', 'Burn Time', 'Motor Lenght', 'Propellant Specific Heat']
+            si = [float(self.ui.propellant_mass.text()), float(self.ui.ri_hm.text()),
+                  float(self.ui.burn_time_hm.text()),
+                  float(self.ui.motor_length.text()), float(self.ui.propellant_cp.text())]
+            imperial = [mp, ri * 2, t, L, cp]
+            table_column = 'SI Imperial'
+            table_data = np.concatenate((np.array(si).reshape(-1, 1), np.array(imperial).reshape(-1, 1)),
+                                        axis=1)
+            main_table = pd.DataFrame(data=table_data, index=table_index, columns=table_column.split())
+
+            second_text = ['Notice that the mass flux will be in units of lb/hr-ft2, so it is needed to convert the area S ',
+                           'to ft2 and multiply Equation 2 by 3600 to have the hr.']
+
+            second_image = 'images/equations2.PNG'
+
+            third_text = ['Having the mass flux now we can obtain the convection coefficient by the first equation, once we',
+                          'have that we multiply by 5.6779 to transfrom from imperial to SI units, if it is desirable, so',
+                          'In SI: hm = {:.4f} [W/m2-K]'.format(hm), 'In imperials: hm = {:.4f} [BT U/hr-ft2-F]'.format(hm/5.6779)]
+
+            # Configurating the pdf file
+
+            pdf = canvas.Canvas(filename)
+            pdf.setTitle(title)
+            pdf.drawString(130, 770, title)
+
+            # Showing the header text of the report
+            text = pdf.beginText(45, 720, header_text)
+            for line in header_text:
+                text.textLine(line)
+            pdf.drawText(text)
+            #######################################
+            # Showing the first equation
+            pdf.drawInlineImage(image, 215, 615, 165, 70)
+            #######################################
+            # Showing the second header text of the report
+            text = pdf.beginText(45, 590, header_text2)
+            for line in header_text2:
+                text.textLine(line)
+            pdf.drawText(text)
+            #######################################
+            # Showing the second header text of the report
+            text = pdf.beginText(205, 540, str(main_table))
+            for line in str(main_table).split('\n'):
+                text.textLine(line)
+            pdf.drawText(text)
+            #######################################
+            # Showing the second header text of the report
+            text = pdf.beginText(45, 420, second_text)
+            for line in second_text:
+                text.textLine(line)
+            pdf.drawText(text)
+            #######################################
+            # Showing the first equation
+            pdf.drawInlineImage(second_image, 255, 340, 100, 40)
+            #######################################
+            # Showing the second header text of the report
+            text = pdf.beginText(45, 280, third_text)
+            for line in third_text:
+                text.textLine(line)
+            pdf.drawText(text)
+
+
+            drawMyRuler(pdf)
+            pdf.save()
+
+            print(main_table)
+
+def drawMyRuler(pdf):
+    pdf.drawString(100,810, '')
+    pdf.drawString(200,810, '')
+    pdf.drawString(300,810, '')
+    pdf.drawString(300,810, '')
+    pdf.drawString(500,810, '')
+    pdf.drawString(10,100, '')
+    pdf.drawString(10,200, '')
+    pdf.drawString(10,300, '')
+    pdf.drawString(10,400, '')
+    pdf.drawString(10,500, '')
+    pdf.drawString(10,600, '')
+    pdf.drawString(10,700, '')
+    pdf.drawString(10,800, '')
+
 
 class motor_case(myWindows):
     """
@@ -446,7 +584,7 @@ class motor_case(myWindows):
     """
 
     def __init__(self, material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm, Ta,
-                 Tc, type):
+                 Tc, coast, type):
         """
         This is a constructor method of motor_case class
 
@@ -471,10 +609,12 @@ class motor_case(myWindows):
         self.r_1 = float(ri)
         self.sectionsr = int(r_steps)
         self.h_m = float(hm)
+        self.h_m2 = self.h_m
         self.Tc = float(Tc)
         self.Ta = float(Ta)
         self.t = float(burn_time)
         self.nt = int(t_steps)
+        self.coast = float(coast)
 
         # Importing material data and calculating the conductivitty coefficient of each one of them
         self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)
@@ -482,7 +622,7 @@ class motor_case(myWindows):
         self.alpha_case = float(self.k_case / (self.cp_case * self.rho_case))
         self.alpha_insulator = float(self.k_insulator / (self.cp_insulator * self.rho_insulator))
         if type == 1:
-            self.T, self.Values = self.run_analysis_case()
+            self.T, self.Values, self.Values_nt = self.run_analysis_case()
         elif type == 2:
             self.T, self.Values = self.run_analysis_explicit()
 
@@ -501,14 +641,16 @@ class motor_case(myWindows):
 
         # Time
         self.dt = self.t / self.nt  # Time variation [s]
-
+        self.nt_coast = int(self.coast/self.dt)
         # we have to set the initial and boundary conditions
-        self.r = [self.r_1 + i * self.dr for i in range(self.nr)]  # Defining the r vector
+        self.r = [self.r_1 + i * self.dr for i in range(self.nr)]    # Defining the r vector
+
+        self.total_time = np.linspace(0, self.coast, self.nt_coast)
 
         A = self.create_Amatrix()
-
         # Creating the T matrix
-        T_implicit = np.zeros([self.nt, self.nr])
+
+        T_implicit = np.zeros([self.nt_coast, self.nr])
 
         # Setting initial values for the T matrix
         for i in range(self.nr):
@@ -518,15 +660,25 @@ class motor_case(myWindows):
         A_inverse = np.linalg.inv(A)
 
         # Calculating the implicit T matrix
-        for i in range(self.nt - 1):
+        for i in range(self.nt_coast - 1):
+            if self.total_time[i] > self.t:
+                self.h_m = 0
+            else:
+                self.h_m = self.h_m2
+            print(i)
             T_implicit[i][0] = T_implicit[i][0] + (self.h_m * 2 * self.dt * (self.Tc - T_implicit[i][0])) / (
                         self.rho_insulator * self.cp_insulator * self.dr)
+
             T_implicit[i + 1] = (np.matmul(A_inverse, T_implicit[i]))
 
-        values = T_implicit[self.nt - 1, ::]
+        values = T_implicit[self.nt_coast - 1, ::]
+        values_nt = T_implicit[self.nt-1, ::]
+
+        print('val_nt:', len(values_nt))
+
         self.display_loadmessage('Analysis finished',
                                  'The analysis has been finished, now you can generate your output file and graphical resources')
-        return T_implicit, values
+        return T_implicit, values, values_nt
 
     def run_analysis_explicit(self):
         """
@@ -659,6 +811,7 @@ class bulkhead(myWindows):
         self.rho_insulator, self.k_insulator, self.cp_insulator = materials.insulator_selector(
             material_liner)  # Insulator properties
         self.h_m = float(hm)
+        self.h_m_2 = self.h_m # this will be used in the future
         self.insulator_thk = float(insulator_thk)
         self.z = float(bulkhead_thk)
         self.radius_inner = float(radius_inner)
@@ -713,7 +866,12 @@ class bulkhead(myWindows):
         # Calculating the T-matrix
         for i in range(nt - 1):
             for l in range(nz):
-                for j in range(nr):
+                for j in range(nr): # Setting the value of heat covenctive coefficient based on the radial position
+                    if r[j] > self.radius_outer:
+                        self.h_m = 0
+                    else:
+                        self.h_m = self.h_m_2
+
                     if z[l] <= z_2:  # Set insulation material
                         alpha = self.alpha_insulator
                         rho = self.rho_insulator
