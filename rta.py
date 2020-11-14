@@ -467,18 +467,17 @@ class myWindows(QtWidgets.QMainWindow):
 
     def generate_pdf_hm(self):
             date = datetime.datetime.now()
-            filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))+'.pdf'
+            filename = 'mydoc.pdf'
+            #filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))+'.pdf'
 
             # defining the header text
             title = 'Heat Convective Coefficient Report - By Rocket Thermal Analysis'
-            header_text = [
-                ' The convective heat transfer coefficient was calculated using the formula shown Equation 1, [1].',
-                'The equation considers the mass flux (G) as average, it is calculated as in Equations below.']
+            header_text = [' The convective heat transfer coefficient was calculated using the formula shown Equation 1, [1].',
+                          'The equation considers the mass flux (G) as average, it is calculated as in Equations below.']
 
             image = 'images/equations.PNG'
-            header_text2 = [
-                'This formula is in imperial units, so every value needs to be converted to imperial units before',
-                'it can be used. The inputs in imperial and S.I. units can be seen in table below.']
+            header_text2 = ['This formula is in imperial units, so every value needs to be converted to imperial units before',
+                             'it can be used. The inputs in imperial and S.I. units can be seen in table below.']
 
             # calculating hm again
             mp = float(self.ui.propellant_mass.text()) * 2.20462
@@ -490,28 +489,29 @@ class myWindows(QtWidgets.QMainWindow):
             hm = (0.024 * cp * (G ** 0.8) / ((ri * 2) ** 0.2)) * (1 + ((ri * 2 / L) ** 0.7)) * 5.6779
 
             # creating the main table
+            table_index = ['Propellant Mass', 'Inner Diameter', 'Burn Time', 'Motor Lenght', 'Propellant Specific Heat']
+            si = [float(self.ui.propellant_mass.text()), float(self.ui.ri_hm.text()), float(self.ui.burn_time_hm.text()),
+                  float(self.ui.motor_length.text()), float(self.ui.propellant_cp.text())]
+            imperial = [mp, ri*2, t, L, cp]
+            table_column = 'SI Imperial'
+            table_index = ['Propellant Mass', 'Inner Diameter', 'Burn Time', 'Motor Lenght', 'Propellant Specific Heat']
+            si = [float(self.ui.propellant_mass.text()), float(self.ui.ri_hm.text()),
+                  float(self.ui.burn_time_hm.text()),
+                  float(self.ui.motor_length.text()), float(self.ui.propellant_cp.text())]
+            imperial = [mp, ri * 2, t, L, cp]
+            table_column = 'SI Imperial'
+            table_data = np.concatenate((np.array(si).reshape(-1, 1), np.array(imperial).reshape(-1, 1)),
+                                        axis=1)
+            main_table = pd.DataFrame(data=table_data, index=table_index, columns=table_column.split())
 
-            table_data = [['', 'SI', 'Imperial'],
-                          ['Propellant mass', str(float(self.ui.propellant_mass.text())), str(mp)],
-                          ['Inner diameter', str(float(self.ui.ri_hm.text())), str(ri * 2)],
-                          ['Burn time', str(float(self.ui.burn_time_hm.text())), str(t)],
-                          ['Motor Lenght', str(float(self.ui.motor_length.text())), str(L)],
-                          ['Propellant Specific Heat', str(float(self.ui.propellant_cp.text())), str(cp)]]
-
-            second_text = [
-                'Notice that the mass flux will be in units of lb/hr-ft2, so it is needed to convert the area S to ft2',
-                'and multiply Equation 2 by 3600 to have the hr.']
+            second_text = ['Notice that the mass flux will be in units of lb/hr-ft2, so it is needed to convert the area S ',
+                           'to ft2 and multiply Equation 2 by 3600 to have the hr.']
 
             second_image = 'images/equations2.PNG'
 
-            third_text = [
-                'Having the mass flux now we can obtain the convection coefficient by the first equation, once we',
-                'have that we multiply by 5.6779 to transfrom from imperial to SI units, if it is desirable, so',
-                '', '',
-                'In SI: hm = {:.4f} [W/m2-K]'.format(hm),
-                'In imperials: hm = {:.4f} [BTU/hr-ft2-F]'.format(hm / 5.6779), '', '','','','', '', '','','','',
-                '[1]  T. B. I. Eugene A. Avallone.Mark’s Standard Handbook for Mechanical Engineers. 1996, 10th',
-                'edition McGraw-Hill.']
+            third_text = ['Having the mass flux now we can obtain the convection coefficient by the first equation, once we',
+                          'have that we multiply by 5.6779 to transfrom from imperial to SI units, if it is desirable, so',
+                          'In SI: hm = {:.4f} [W/m2-K]'.format(hm), 'In imperials: hm = {:.4f} [BT U/hr-ft2-F]'.format(hm/5.6779)]
 
             # Configurating the pdf file
 
@@ -528,36 +528,38 @@ class myWindows(QtWidgets.QMainWindow):
             # Showing the first equation
             pdf.drawInlineImage(image, 215, 615, 165, 70)
             #######################################
-            # Showing the second text of the report
+            # Showing the second header text of the report
             text = pdf.beginText(45, 590, header_text2)
             for line in header_text2:
                 text.textLine(line)
             pdf.drawText(text)
             #######################################
-            # Showing the table of the report
-            from reportlab.platypus import Table
-
-            table = Table(table_data)
-            table.wrapOn(pdf, 205, 540)
-            table.drawOn(pdf, 190, 450)
+            # Showing the second header text of the report
+            text = pdf.beginText(205, 540, str(main_table))
+            for line in str(main_table).split('\n'):
+                text.textLine(line)
+            pdf.drawText(text)
             #######################################
-            # Showing the third text of the report
+            # Showing the second header text of the report
             text = pdf.beginText(45, 420, second_text)
             for line in second_text:
                 text.textLine(line)
             pdf.drawText(text)
             #######################################
-            # Showing the second equation
+            # Showing the first equation
             pdf.drawInlineImage(second_image, 255, 340, 100, 40)
             #######################################
-            # Showing the fourth text of the report
-            text = pdf.beginText(45, 310, third_text)
+            # Showing the second header text of the report
+            text = pdf.beginText(45, 280, third_text)
             for line in third_text:
                 text.textLine(line)
             pdf.drawText(text)
 
+
             drawMyRuler(pdf)
             pdf.save()
+
+            print(main_table)
 
 def drawMyRuler(pdf):
     pdf.drawString(100,810, '')
@@ -637,6 +639,9 @@ class motor_case(myWindows):
         self.dr = (self.r_3 - self.r_1) / self.sectionsr  # r variation [m]
         self.nr = self.sectionsr + 1  # Nº of radial points
 
+        #Convection Coefficient Air
+        self.h_m_out = 6
+
         # Time
         self.dt = self.t / self.nt  # Time variation [s]
         self.nt_coast = int(self.coast/self.dt)
@@ -663,7 +668,8 @@ class motor_case(myWindows):
                 self.h_m = 0
             else:
                 self.h_m = self.h_m2
-            print(i)
+            T_implicit[i][self.nr - 1] = T_implicit[i][self.nr - 1] + (self.h_m_out * 2 * self.dt * (self.Ta - T_implicit[i][self.nr - 1])) / (
+                        self.rho_insulator * self.cp_insulator * self.dr)
             T_implicit[i][0] = T_implicit[i][0] + (self.h_m * 2 * self.dt * (self.Tc - T_implicit[i][0])) / (
                         self.rho_insulator * self.cp_insulator * self.dr)
 
@@ -671,8 +677,6 @@ class motor_case(myWindows):
 
         values = T_implicit[self.nt_coast - 1, ::]
         values_nt = T_implicit[self.nt-1, ::]
-
-        print('val_nt:', len(values_nt))
 
         self.display_loadmessage('Analysis finished',
                                  'The analysis has been finished, now you can generate your output file and graphical resources')
@@ -761,11 +765,8 @@ class motor_case(myWindows):
         # Building the A matrix
         A[0][0] = 1 + (2 * self.dt * self.k_insulator) / (self.rho_insulator * self.cp_insulator * self.dr ** 2)
         A[0][1] = -self.k_insulator * 2 * self.dt / (self.dr * self.dr * self.rho_insulator * self.cp_insulator)
-        A[self.nr - 1][self.nr - 1] = 1 - self.alpha_case * self.dt / (
-                    self.r[self.nr - 1] * self.dr) - self.alpha_case * self.dt / (self.dr ** 2)
-        A[self.nr - 1][self.nr - 2] = self.alpha_case * self.dt / (
-                    self.r[self.nr - 1] * self.dr) + 2 * self.alpha_case * self.dt / (self.dr ** 2)
-        A[self.nr - 1][self.nr - 3] = -self.alpha_case * self.dt / (self.dr ** 2)
+        A[self.nr - 1][self.nr - 1] = 1 - 2*self.k_case * self.dt / (self.rho_case*self.cp_case*(self.dr**2))
+        A[self.nr - 1][self.nr - 2] = 2 * self.k_case * self.dt / (self.rho_case*self.cp_case*(self.dr**2))
 
         for i in range(1, self.nr - 1):
             if self.r[i] >= self.r_2:
@@ -963,3 +964,4 @@ if __name__ == '__main__':
     application = myWindows()
     application.show()
     sys.exit(app.exec())
+
