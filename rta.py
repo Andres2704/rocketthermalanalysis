@@ -864,6 +864,9 @@ class bulkhead(myWindows):
         dt = ((dr ** 2) * (dz ** 2)) / (1.99 * self.alpha_case * (dr ** 2 + dz ** 2))
         nt = math.ceil(self.t / dt)
 
+        # Convection Coefficient Air
+        self.h_m_out = 6
+
         d_insulator = self.alpha_insulator * (dt / (dr ** 2))  # Insulation Fourier number
         d_case = self.alpha_case * (dt / (dr ** 2))  # Casing Fourier number
 
@@ -899,26 +902,24 @@ class bulkhead(myWindows):
                         cp = self.cp_case
                         k = self.k_case
                     if l == nz - 1:
-                        if j == nr - 1:  # z end and r end
-                            T[i + 1][j][l] = (1 + (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
-                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
-                                                     (-2 * alpha * dt) / (dr ** 2) - (alpha * dt) / (r[j] * dr)) * \
-                                             T[i][j - 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j - 2][l] + (
-                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
-                        elif j == 0:  # z end and r start
-                            T[i + 1][j][l] = (1 - (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
-                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
-                                                     (alpha * dt) / (r[j] * dr) - (2 * alpha * dt) / (dr ** 2)) * \
-                                             T[i][j + 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j + 2][l] + (
-                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
-                        else:  # z end and r middle
-                            T[i + 1][j][l] = (1 - (2 * alpha * dt) / (dr ** 2) + (alpha * dt) / (dz ** 2)) * T[i][j][
-                                l] + ((alpha * dt) / (dr ** 2) - (alpha * dt) / (2 * r[j] * dr)) * T[i][j - 1][l] + (
-                                                     (alpha * dt) / (dr ** 2) + (alpha * dt) / (2 * r[j] * dr)) * \
-                                             T[i][j + 1][l] + ((-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
+                        if j == nr - 1:  # z start and r end
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 + (k * dt) / (rho * cp * (dr) ** 2) + (k * dt) / (rho * cp * (dz) ** 2) - (
+                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + (
+                                                     (-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + (
+                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
+                        elif j == 0:  # z start and r start
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 - (k * dt) / (rho * cp * (dr) ** 2) + (k * dt) / (rho * cp * (dz) ** 2) - (
+                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + (
+                                                     (k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
+                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
+                        else:  # z start and r middle
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 + (k * dt) / (rho * cp * (dz) ** 2) - (2 * self.h_m_out * dt) / (rho * cp * dz)) * \
+                                             T[i][j][l] + ((k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
+                                                     (-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + (
+                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
                     elif l == 0:
                         if j == nr - 1:  # z start and r end
                             T[i + 1][j][l] = (2 * self.h_m * dt * self.Tc) / (rho * cp * dz) + (
