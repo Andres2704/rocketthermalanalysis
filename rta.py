@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets
 from gui import Ui_RocketThermalAnalysis
+from gui2 import Ui_RTA
+from custom_material import Ui_CustomMaterial
 
 import sys, math, materials
 import numpy as np
@@ -8,38 +10,79 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
 
+class custom_materials(QtWidgets.QMainWindow):
+    def __init__(self, parent = None):
+        super(custom_materials, self).__init__(parent)
+        self.ui_custom = Ui_CustomMaterial()
+        self.ui_custom.setupUi(self)
+        self.use_material = self.ui_custom.btn_use_material.clicked.connect(self.get_material_data)
+
+    def get_material_data(self):
+        self.name = self.ui_custom.material_name.text()
+        self.cp = float(self.ui_custom.cp_box.value())
+        self.rho = float(self.ui_custom.rho_box.value())
+        self.k = float(self.ui_custom.k_box.value())
+
+        temp = [self.name, self.cp, self.rho, self.k]
+        for i in temp:
+            if i=='':
+                error = QtWidgets.QMessageBox()
+                error.setIcon(error.Critical)
+                error.setText('Empty data')
+                error.setInformativeText('Please, fill all the fields to continue.')
+                error.setWindowTitle('Error')
+                error.exec_()
+                return 0
+        self.close()
+
+
 class myWindows(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.ui = Ui_RocketThermalAnalysis()  # Calling the main windows of the UI
+        self.ui = Ui_RTA()  # Calling the main windows of the UI
         self.ui.setupUi(self)
         self.case_temperature = []  # Preallocating the case temperature object
         self.bulkhead_temperature = []  # Preallocatin the bulkhead temperature object
         self.run_implicit_button = self.ui.run_implicit.clicked.connect(
-            self.run_implicit_function)  # Run implicit method for case
-        self.run_explicit_button = self.ui.run_explicit.clicked.connect(
-            self.run_explicit_function)  # Run explicit method for case
+            self.run_function)  # Run implicit method for case
+
         self.run_bulk_button = self.ui.run_bulk.clicked.connect(
             self.run_bulkhead_function)  # Run bulkhead explicit method
-        self.generate_out_case_button = self.ui.generate_output.clicked.connect(
-            self.generate_output_function)  # Generate output file for case analysis
         self.generate_out_bulk_button = self.ui.generate_output_2.clicked.connect(
             self.generate_output_function_bulk)  # Generate output file for bulkhead analysis
-        self.generate_graph_case = self.ui.generate_graphs.clicked.connect(
-            self.generate_graph_case_function)  # Generate graphs for case analysis
+
+        self.generate_graph_case = \
+            self.ui.generate_graphs.triggered.connect(self.generate_graph_case_function) # Generate graphs for case analysis
+
+        self.generate_out_case_button = \
+            self.ui.generate_output.triggered.connect(self.generate_output_function)  # Generate output file for case analysis
+
         self.generate_graph_bulk = self.ui.generate_graphs_2.clicked.connect(
             self.generate_graph_bulk_function)  # Generate graphs for bulkhead analysis
         self.run_hmcoef_button = self.ui.hm_button.clicked.connect(self.run_hm_function)
         self.generate_pdf_hmcoef = self.ui.hm_pdfreport.clicked.connect(self.generate_pdf_hm)
 
+        self.Custom_case_windows = None
+        self.Custom_insulator_windows = None
+        self.btn_custom_case = self.ui.btn_custom_case.clicked.connect(self.fnc_custom_case)
+        self.btn_custom_insulator = self.ui.btn_custom_insulator.clicked.connect(self.fnc_custom_insulator)
+
+
+    def fnc_custom_case(self):
+        if self.Custom_case_windows == None:
+            self.Custom_case_windows = custom_materials(self)
+        self.Custom_case_windows.show()
+
+    def fnc_custom_insulator(self):
+        if self.Custom_insulator_windows == None:
+            self.Custom_insulator_windows = custom_materials(self)
+        self.Custom_insulator_windows.show()
+
     def display_errors(self, text, message):
         """
         This method is for display an error message box to the user, widely used along the code
-
         :param text: The header text which is shown in the message box
-
         :param message: The main message
-
         :return: A message box
         """
         error = QtWidgets.QMessageBox()
@@ -52,11 +95,8 @@ class myWindows(QtWidgets.QMainWindow):
     def display_loadmessage(self, text, message):
         """
          This method is for display an information message box to the user, widely used along the code
-
         :param text: The header text which is shown in the message box
-
         :param message: The main message
-
         :return: A message box
         """
         error = QtWidgets.QMessageBox()
@@ -69,11 +109,8 @@ class myWindows(QtWidgets.QMainWindow):
     def display_loadwarning(self, text, message):
         """
          This method is for display a warning message box to the user, widely used along the code
-
         :param text: The header text which is shown in the message box
-
         :param message: The main message
-
         :return: A message box
         """
         error = QtWidgets.QMessageBox()
@@ -86,7 +123,6 @@ class myWindows(QtWidgets.QMainWindow):
     def run_hm_function(self):
         """
          This method is used when the user press to calculate the convective coefficient.
-
          :return: Returns the resultant convective coefficient
          """
         try:
@@ -115,29 +151,49 @@ class myWindows(QtWidgets.QMainWindow):
                                 'As a result from your data a memory error has result, please check it. Also, verify if you use . instead , for numbers.')
             return 1
 
-    def run_implicit_function(self):
+    def run_function(self):
         """
         This method is used when the user press to analyse an IMPLICIT numerical method for the rocket motor cases
-
         :return: Returns nothing else than 1. The main purpose for the function is to declare an object of the
         motor case class and define a property of myWindows classes with the resultant analysis
         """
         try:
             # Saving the data provided by the user
-            material_liner = self.ui.material_insulator.text()
-            material_case = self.ui.material_case.text()
+            if self.Custom_insulator_windows == None:
+                liner_op = self.ui.material_insulator.currentText()
+            else:
+                liner_op = [self.Custom_insulator_windows.name, self.Custom_insulator_windows.rho,
+                            self.Custom_insulator_windows.k, self.Custom_insulator_windows.cp]
+            print(liner_op)
+            if self.Custom_case_windows == None:
+                case_op = self.ui.material_case.currentText()
+            else:
+                case_op = [self.Custom_case_windows.name, self.Custom_case_windows.rho,
+                           self.Custom_case_windows.k, self.Custom_case_windows.cp]
+
             coast = self.ui.t_total_implicit.text()
             insulator_thk = self.ui.insulator_thk.text()
             case_thk = self.ui.case_thk.text()
             ri = self.ui.ri.text()
             burn_time = self.ui.burn_time.text()
-
             t_steps = self.ui.t_steps.text()
+            r_steps = self.ui.r_steps.text()
+            hm = self.ui.hm.text()
+            Ta = self.ui.Ta.text()
+            Tc = self.ui.Tc.text()
+
+            # Verify if some field is empty
+            self.data = [case_op, liner_op, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
+                         Ta, Tc, coast]
+            for i in self.data:
+                if i == '':
+                    self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
+                    return 0
+
             if int(t_steps) < 10:  # Setting a minimum value to run the analysis
                 self.display_errors('Minimum value', 'Please put at least 10 points for time step.')
                 return 0
 
-            r_steps = self.ui.r_steps.text()
             if int(r_steps) < 10:  # Setting a minimum value to run the analysis
                 self.display_errors('Minimum value', 'Please put at least 10 points for radial step.')
                 return 0
@@ -145,25 +201,18 @@ class myWindows(QtWidgets.QMainWindow):
             if int(t_steps)>500 or int(r_steps)>1000:
                 self.display_loadwarning('Output', 'This time OR radial step will generate a weighty output file. [Ok to run the analysis]')
 
-            hm = self.ui.hm.text()
-            Ta = self.ui.Ta.text()
-            Tc = self.ui.Tc.text()
+            self.method = self.ui.type_analysis_case.currentText()  # This will be used when we generate the graphical resources
 
-            # Verify if some field is empty
-            self.data = [material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
-                         Ta, Tc, coast]
-            for i in self.data:
-                if i == '':
-                    self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
-                    return 0
-
-            self.method = 'Implicit'  # This will be used when we generate the graphical resources
+            if self.method == 'Implicit':
+                type = 1
+            else:
+                type = 2
 
             # Calling the solution method
-            self.case_temperature = motor_case(material_case, material_liner, insulator_thk, case_thk,
+            self.case_temperature = motor_case(case_op, liner_op, insulator_thk, case_thk,
                                                ri, t_steps, burn_time, r_steps,
                                                hm, Ta, Tc, coast,
-                                               1)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
+                                               type)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
             return 1
         except:
             # Display an error in case the of failure of the analysis
@@ -171,59 +220,9 @@ class myWindows(QtWidgets.QMainWindow):
                                 'As a result from your data a memory error has result, please check it.')
             return 1
 
-    def run_explicit_function(self):
-        """
-         This method is used when the user press to analyse an EXPLICIT numerical method for the rocket motor cases
-
-         :return: Returns nothing else than 1. The main purpose for the function is to declare an object of the
-         motor case class and define a property of myWindows classes with the resultant analysis
-         """
-        try:
-            # Saving the text provided by the user
-            material_liner = self.ui.material_insulator_2.text()
-            material_case = self.ui.material_case_2.text()
-            insulator_thk = self.ui.insulator_thk_2.text()
-            coast = self.ui.t_total_explicit.text()
-            case_thk = self.ui.case_thk_2.text()
-            ri = self.ui.ri_2.text()
-            burn_time = self.ui.burn_timeexp.text()
-            hm = self.ui.hm_2.text()
-            Ta = self.ui.Ta_2.text()
-            Tc = self.ui.Tc_2.text()
-
-            t_steps = self.ui.t_steps_exp.text()
-            if int(t_steps) < 10:  # Setting a minimum value to run the analysis
-                self.display_errors('Minimum value', 'Please put at least 10 points for time step.')
-                return 0
-
-            r_steps = self.ui.r_steps_2.text()
-            if int(r_steps) < 10:  # Setting a minimum value to run the analysis
-                self.display_errors('Minimum value', 'Please put at least 10 points for radial step.')
-                return 0
-
-            # Verify if some field is empty
-            self.data = [material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
-                         Ta, Tc, coast]
-            for i in self.data:
-                if i == '':
-                    self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
-                    return 0
-
-            self.method = 'Explicit'
-            # Calling the solution method
-            self.case_temperature = motor_case(material_case, material_liner, insulator_thk, case_thk,
-                                               ri, t_steps, burn_time, r_steps,
-                                               hm, Ta, Tc, coast, 2)
-            return 1
-        except:
-            self.display_errors('Memory error',
-                                'As a result from your data a memory error has result, please check it.')
-            return 1
-
     def run_bulkhead_function(self):
         """
          This method is used when the user press to analyse a 2D EXPLICIT numerical method for the rocket motor bulkhead
-
          :return: Returns nothing else than 1. The main purpose for the function is to declare an object of the
          motor case class and define a property of myWindows classes with the resultant analysis
          """
@@ -266,7 +265,6 @@ class myWindows(QtWidgets.QMainWindow):
     def generate_output_function(self):
         """
          The purpose of this method is to generate an output file with the results of analysis for the case
-
          :return: Returns nothing else than 1 and an output file in the same directory that this code is running
          """
         # Verifying if some analysis was generated
@@ -292,11 +290,22 @@ class myWindows(QtWidgets.QMainWindow):
             pd.set_option('display.max_columns', None)
             pd.set_option('display.max_colwidth', None)
 
+            # Configurating the name of insulator and case material
+            if type(self.data[0][0::])==list:
+                case_material = self.data[0][0]
+            else:
+                case_material = self.data[0][0::]
+
+            if type(self.data[1][0::])==list:
+                liner_material = self.data[1][0]
+            else:
+                liner_material = self.data[1][0::]
+
             # Generating the resultant file
             date = datetime.datetime.now()
             information = '''Output file generated by Rocket Thermal Analysis\n\nType of analysis: ''' + 'Case temperature distribution' + '''
-            \nAnalysis Information:\n Case material: ''' + str(self.data[0]) + '''\n Insulator Material: ''' + str(
-                self.data[1]) + '''\n Insulator thickness: ''' + str(self.data[2]) + ''' m\n Case thickness: ''' + str(
+            \nAnalysis Information:\n Case material: ''' + str(case_material) + '''\n Insulator Material: ''' + str(
+                liner_material) + '''\n Insulator thickness: ''' + str(self.data[2]) + ''' m\n Case thickness: ''' + str(
                 self.data[3]) + ''' m\n Inner cylinder radius: ''' + \
                           str(self.data[4]) + ''' m\n Time Steps: ''' + str(self.data[5]) + '''\n Burn time: ''' + str(
                 self.data[6]) + ''' s\n Radial Steps: ''' + \
@@ -363,7 +372,6 @@ class myWindows(QtWidgets.QMainWindow):
     def generate_graph_case_function(self):
         """
          This method is used when the user to generate the graphs of the analysis for the case
-
          :return: Return three different graphs, are they:
                   - Temperature distribution along the insulator and case
                   - Temperature distribution along the case at the final time
@@ -446,7 +454,6 @@ class myWindows(QtWidgets.QMainWindow):
     def generate_graph_bulk_function(self):
         """
          This method is used when the user to generate the graphs of the analysis for the case
-
          :return: Return three different graphs, are they:
                   - Temperature distribution along the insulator and case
                   - Temperature distribution along the case at the final time
@@ -584,10 +591,9 @@ class motor_case(myWindows):
     """
 
     def __init__(self, material_case, material_liner, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm, Ta,
-                 Tc, coast, type):
+                 Tc, coast, type_analysis):
         """
         This is a constructor method of motor_case class
-
         :param material_case: Material of the cases (Format=str)
         :param material_liner: Material of the insulator(Format=str)
         :param insulator_thk: Insulator thickness (Format=float)
@@ -600,7 +606,6 @@ class motor_case(myWindows):
         :param Ta: Initial temperature of the materials (Format=float)
         :param Tc: Chamber temperature (Format=float)
         :param type: Type of analysis (Format=int)
-
         """
 
         super(motor_case, self).__init__()
@@ -617,19 +622,29 @@ class motor_case(myWindows):
         self.coast = float(coast)
 
         # Importing material data and calculating the conductivitty coefficient of each one of them
-        self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)
-        self.rho_insulator, self.k_insulator, self.cp_insulator = materials.insulator_selector(material_liner)
+        print('ok')
+        if type(material_case) == list:
+            self.rho_case, self.k_case, self.cp_case = material_case[1::]
+        else:
+            print(material_case)
+            self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)
+
+        if type(material_liner) == list:
+            self.rho_insulator, self.k_insulator, self.cp_insulator = material_liner[1::]
+        else:
+            self.rho_insulator, self.k_insulator, self.cp_insulator = materials.insulator_selector(material_liner)
+
         self.alpha_case = float(self.k_case / (self.cp_case * self.rho_case))
         self.alpha_insulator = float(self.k_insulator / (self.cp_insulator * self.rho_insulator))
-        if type == 1:
+
+        if type_analysis == 1:
             self.T, self.Values, self.Values_nt = self.run_analysis_case()
-        elif type == 2:
+        elif type_analysis == 2:
             self.T, self.Values = self.run_analysis_explicit()
 
     def run_analysis_case(self):
         """
          This method is used to calculate the temperature distribution on the motor cases by an implicit method
-
         :return: Temperature distribution in matrix form and the temperature distribution along the outer case side
         """
 
@@ -685,7 +700,6 @@ class motor_case(myWindows):
     def run_analysis_explicit(self):
         """
          This method is used to calculate the temperature distribution on the motor cases by an explicit method
-
         :return: Temperature distribution in matrix form and the temperature distribution along the outer case side
         """
 
@@ -694,6 +708,9 @@ class motor_case(myWindows):
         self.r_3 = self.r_2 + self.case_thk  # Radial position of casing end [m]
         self.dr = (self.r_3 - self.r_1) / self.sectionsr  # r variation [m]
         self.nr = self.sectionsr + 1  # Nº of radial points
+
+        # Convection Coefficient Air
+        self.h_m_out = 6
 
         # Time
         self.dt = self.t / self.nt
@@ -735,18 +752,20 @@ class motor_case(myWindows):
                     cp = self.cp_case
                     k = self.k_case
                 if i == self.nr - 1:
-                    T[j + 1][i] = T[j][i] + alpha * self.dt * (
-                                ((1 / (self.r[i] * self.dr)) * (T[j][i] - T[j][i - 1])) + (
-                                    (T[j][i] + T[j][i - 2] - 2 * T[j][i - 1]) /
-                                    (self.dr ** 2)))
+                    T[j + 1][i] = (1 - (2 * self.dt * self.h_m_out) / (rho * cp * self.dr) - (2 * self.dt * k) / (
+                                rho * cp * (self.dr ** 2))) * T[j][i] + (
+                                              (2 * self.dt * k) / (rho * cp * (self.dr ** 2))) * T[j][i - 1] + (
+                                              2 * self.h_m_out * self.Ta * self.dt) / (rho * cp * self.dr)
                 elif i == 0:
-                    T[j + 1][i] = T[j][i] + (2 / (rho * cp * self.dr)) * (
-                                self.h_m * self.dr * (self.Tc - T[j][0]) + k * (T[j][1] - T[j][0]))
+                    T[j + 1][i] = (1 - (2 * self.dt * self.h_m) / (rho * cp * self.dr) - (2 * self.dt * k) / (
+                                rho * cp * (self.dr ** 2))) * T[j][i] + (
+                                              (2 * self.dt * k) / (rho * cp * (self.dr ** 2))) * T[j][i + 1] + (
+                                              2 * self.h_m * self.Tc * self.dt) / (rho * cp * self.dr)
                 else:
                     T[j + 1][i] = T[j][i] + alpha * self.dt * (
-                                ((1 / (2 * self.r[i] * self.dr)) * (T[j][i + 1] - T[j][i - 1])) + (
-                                    (T[j][i + 1] + T[j][i - 1] - 2 * T[j][i]) /
-                                    (self.dr ** 2)))
+                            ((1 / (2 * self.r[i] * self.dr)) * (T[j][i + 1] - T[j][i - 1])) + (
+                            (T[j][i + 1] + T[j][i - 1] - 2 * T[j][i]) /
+                            (self.dr ** 2)))
         values = T[self.nt - 1, ::]
         self.display_loadmessage('Analysis finished',
                                  'The analysis has been finished, now you can generate your output file and graphical resources')
@@ -755,7 +774,6 @@ class motor_case(myWindows):
     def create_Amatrix(self):
         """
          This method is used to the tridiagonal matrix to solve by implicit method
-
         :return: Tridiagonal matrix
         """
 
@@ -789,7 +807,6 @@ class bulkhead(myWindows):
                  burn_time, r_steps, hm, Ta, Tc):
         """
         This is a constructor method of bulkhead class
-
         :param material_case: Material of the cases (Format=str)
         :param material_liner: Material of the insulator(Format=str)
         :param insulator_thk: Insulator thickness (Format=float)
@@ -801,7 +818,6 @@ class bulkhead(myWindows):
         :param hm: Heat convective coefficient (Format=float)
         :param Ta: Initial temperature of the materials (Format=float)
         :param Tc: Chamber temperature (Format=float)
-
         """
         super(bulkhead, self).__init__()
 
@@ -827,7 +843,6 @@ class bulkhead(myWindows):
     def run_analysis_bulkhead(self):
         """
          This method is used to calculate the 2D temperature distribution on the motor bulkhead by an explicit method
-
         :return: Temperature distribution in matrix form and the temperature distribution along vertical direction of
         the bulkhead
         """
@@ -960,8 +975,7 @@ class bulkhead(myWindows):
 
 
 if __name__ == '__main__':
-    app = QtWidgets.QApplication([])
-    application = myWindows()
-    application.show()
-    sys.exit(app.exec())
-
+    app = QtWidgets.QApplication(sys.argv)
+    w = myWindows()
+    w.show()
+    app.exec_()
