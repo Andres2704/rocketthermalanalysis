@@ -48,8 +48,7 @@ class myWindows(QtWidgets.QMainWindow):
 
         self.run_bulk_button = self.ui.run_bulk.clicked.connect(
             self.run_bulkhead_function)  # Run bulkhead explicit method
-        self.generate_out_bulk_button = self.ui.generate_output_2.clicked.connect(
-            self.generate_output_function_bulk)  # Generate output file for bulkhead analysis
+
 
         self.generate_graph_case = \
             self.ui.generate_graphs.triggered.connect(self.generate_graph_case_function) # Generate graphs for case analysis
@@ -57,8 +56,11 @@ class myWindows(QtWidgets.QMainWindow):
         self.generate_out_case_button = \
             self.ui.generate_output.triggered.connect(self.generate_output_function)  # Generate output file for case analysis
 
-        self.generate_graph_bulk = self.ui.generate_graphs_2.clicked.connect(
-            self.generate_graph_bulk_function)  # Generate graphs for bulkhead analysis
+        #self.generate_out_bulk_button = self.ui.generate_output_2.clicked.connect(
+        #    self.generate_output_function_bulk)  # Generate output file for bulkhead analysis
+        #self.generate_graph_bulk = self.ui.generate_graphs_2.clicked.connect(
+        #    self.generate_graph_bulk_function)  # Generate graphs for bulkhead analysis
+        
         self.run_hmcoef_button = self.ui.hm_button.clicked.connect(self.run_hm_function)
         self.generate_pdf_hmcoef = self.ui.hm_pdfreport.clicked.connect(self.generate_pdf_hm)
 
