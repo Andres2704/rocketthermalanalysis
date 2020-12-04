@@ -1,6 +1,5 @@
 from PyQt5 import QtWidgets
-from gui import Ui_RocketThermalAnalysis
-from gui2 import Ui_RTA
+from gui import Ui_RTA
 from custom_material import Ui_CustomMaterial
 
 import sys, math, materials
@@ -41,6 +40,7 @@ class myWindows(QtWidgets.QMainWindow):
         super().__init__()
         self.ui = Ui_RTA()  # Calling the main windows of the UI
         self.ui.setupUi(self)
+
         self.case_temperature = []  # Preallocating the case temperature object
         self.bulkhead_temperature = []  # Preallocatin the bulkhead temperature object
         self.run_implicit_button = self.ui.run_implicit.clicked.connect(
@@ -64,11 +64,18 @@ class myWindows(QtWidgets.QMainWindow):
         self.run_hmcoef_button = self.ui.hm_button.clicked.connect(self.run_hm_function)
         self.generate_pdf_hmcoef = self.ui.hm_pdfreport.clicked.connect(self.generate_pdf_hm)
 
+        self.change_method = self.ui.type_analysis_case.currentTextChanged.connect(self.changed_method_fnc)
+
         self.Custom_case_windows = None
         self.Custom_insulator_windows = None
         self.btn_custom_case = self.ui.btn_custom_case.clicked.connect(self.fnc_custom_case)
         self.btn_custom_insulator = self.ui.btn_custom_insulator.clicked.connect(self.fnc_custom_insulator)
 
+    def changed_method_fnc(self):
+        if self.ui.type_analysis_case.currentText() == 'Explicit':
+            self.ui.t_total_implicit.setDisabled(1)
+        else:
+            self.ui.t_total_implicit.setDisabled(0)
 
     def fnc_custom_case(self):
         if self.Custom_case_windows == None:
@@ -166,7 +173,6 @@ class myWindows(QtWidgets.QMainWindow):
             else:
                 liner_op = [self.Custom_insulator_windows.name, self.Custom_insulator_windows.rho,
                             self.Custom_insulator_windows.k, self.Custom_insulator_windows.cp]
-            print(liner_op)
             if self.Custom_case_windows == None:
                 case_op = self.ui.material_case.currentText()
             else:
@@ -186,7 +192,7 @@ class myWindows(QtWidgets.QMainWindow):
 
             # Verify if some field is empty
             self.data = [case_op, liner_op, insulator_thk, case_thk, ri, t_steps, burn_time, r_steps, hm,
-                         Ta, Tc, coast]
+                         Ta, Tc]
             for i in self.data:
                 if i == '':
                     self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
@@ -206,15 +212,20 @@ class myWindows(QtWidgets.QMainWindow):
             self.method = self.ui.type_analysis_case.currentText()  # This will be used when we generate the graphical resources
 
             if self.method == 'Implicit':
-                type = 1
+                # Calling the solution method
+                if coast == '':
+                    self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
+                    return 0
+                self.case_temperature = motor_case(case_op, liner_op, insulator_thk, case_thk,
+                                                   ri, t_steps, burn_time, r_steps,
+                                                   hm, Ta, Tc, coast,
+                                                   1)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
             else:
-                type = 2
-
-            # Calling the solution method
-            self.case_temperature = motor_case(case_op, liner_op, insulator_thk, case_thk,
-                                               ri, t_steps, burn_time, r_steps,
-                                               hm, Ta, Tc, coast,
-                                               type)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
+                # Calling the solution method
+                self.case_temperature = motor_case(case_op, liner_op, insulator_thk, case_thk,
+                                                   ri, t_steps, burn_time, r_steps,
+                                                   hm, Ta, Tc, 0,
+                                                   2)  # The last parameter is to define the type of analysis | 1-Implicit | 2 - Explicit
             return 1
         except:
             # Display an error in case the of failure of the analysis
@@ -386,48 +397,48 @@ class myWindows(QtWidgets.QMainWindow):
             r_a = np.array(self.case_temperature.r)
             locals = [r_a >= self.case_temperature.r_2]  # 0 1
             r_a = r_a[tuple(locals)]                     # at case domain
+            if self.method == 'Implicit':
+                # Plot along the liner and the case section at total time
+                plt.figure(1, figsize=(10, 20))
+                plt.plot(self.case_temperature.r, self.case_temperature.Values, 'b--', linewidth=2,
+                         label='Insulator section')
+                plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'r', linewidth=2,
+                         label='Case section')
+                plt.title('Temperature distribution - Insulator thickness: ' + str(
+                    self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
+                plt.xlabel('Radial position [m]')
+                plt.ylabel('Temperature [K]')
+                plt.legend(title='Legend')
 
-            # Plot along the liner and the case section at total time
-            plt.figure(1, figsize=(10, 20))
-            plt.plot(self.case_temperature.r, self.case_temperature.Values, 'b--', linewidth=2,
-                     label='Insulator section')
-            plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'r', linewidth=2,
-                     label='Case section')
-            plt.title('Temperature distribution - Insulator thickness: ' + str(
-                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
-            plt.xlabel('Radial position [m]')
-            plt.ylabel('Temperature [K]')
-            plt.legend(title='Legend')
+                # Plot only case section at total time
+                plt.figure(2, figsize=(10, 20))
+                plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'k', linewidth=2,
+                         label='Case section', marker="D", markerfacecolor='r', markeredgecolor='r', markersize=4)
+                plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
+                    self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
+                plt.xlabel('Radial position [m]')
+                plt.ylabel('Temperature [K]')
+                plt.legend(title='Legend')
 
-            # Plot only case section at total time
-            plt.figure(2, figsize=(10, 20))
-            plt.plot(r_a, self.case_temperature.Values[self.case_temperature.r.index(r_a[0])::], 'k', linewidth=2,
-                     label='Case section', marker="D", markerfacecolor='r', markeredgecolor='r', markersize=4)
-            plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
-                self.case_temperature.insulator_thk * 1000) + ' mm (t = ' + str(self.case_temperature.coast) + 's)')
-            plt.xlabel('Radial position [m]')
-            plt.ylabel('Temperature [K]')
-            plt.legend(title='Legend')
+                # Plot multiple time temperature distribution
+                metric = self.case_temperature.nt
+                T0 = self.case_temperature.T[0, self.case_temperature.r.index(r_a[0])::]  # T at time zero
+                T1 = self.case_temperature.T[round(metric / 4), self.case_temperature.r.index(r_a[0])::]  # T at 25% of t
+                T2 = self.case_temperature.T[round(metric / 2), self.case_temperature.r.index(r_a[0])::]  # T at 50% of t
+                T3 = self.case_temperature.T[round(metric * (3 / 4)), self.case_temperature.r.index(r_a[0])::]  # T at 75% of t
+                T4 = self.case_temperature.T[metric - 1, self.case_temperature.r.index(r_a[0])::]  # T at 100% of t
 
-            # Plot multiple time temperature distribution
-            metric = self.case_temperature.nt
-            T0 = self.case_temperature.T[0, self.case_temperature.r.index(r_a[0])::]  # T at time zero
-            T1 = self.case_temperature.T[round(metric / 4), self.case_temperature.r.index(r_a[0])::]  # T at 25% of t
-            T2 = self.case_temperature.T[round(metric / 2), self.case_temperature.r.index(r_a[0])::]  # T at 50% of t
-            T3 = self.case_temperature.T[round(metric * (3 / 4)), self.case_temperature.r.index(r_a[0])::]  # T at 75% of t
-            T4 = self.case_temperature.T[metric - 1, self.case_temperature.r.index(r_a[0])::]  # T at 100% of t
-
-            plt.figure(3, figsize=(10, 20))
-            plt.plot(r_a, T0, label='t = ' + str(self.case_temperature.t * 0))
-            plt.plot(r_a, T1, label='t = ' + str(self.case_temperature.t * 0.25))
-            plt.plot(r_a, T2, label='t = ' + str(self.case_temperature.t * 0.50))
-            plt.plot(r_a, T3, label='t = ' + str(self.case_temperature.t * 0.75))
-            plt.plot(r_a, T4, label='t = ' + str(self.case_temperature.t * 1))
-            plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
-                self.case_temperature.insulator_thk * 1000) + ' mm')
-            plt.xlabel('Radial position [m]')
-            plt.ylabel('Temperature [K]')
-            plt.legend(title='Legend')
+                plt.figure(3, figsize=(10, 20))
+                plt.plot(r_a, T0, label='t = ' + str(self.case_temperature.t * 0))
+                plt.plot(r_a, T1, label='t = ' + str(self.case_temperature.t * 0.25))
+                plt.plot(r_a, T2, label='t = ' + str(self.case_temperature.t * 0.50))
+                plt.plot(r_a, T3, label='t = ' + str(self.case_temperature.t * 0.75))
+                plt.plot(r_a, T4, label='t = ' + str(self.case_temperature.t * 1))
+                plt.title('Temperature distribution along the case - Insulator thickness: ' + str(
+                    self.case_temperature.insulator_thk * 1000) + ' mm')
+                plt.xlabel('Radial position [m]')
+                plt.ylabel('Temperature [K]')
+                plt.legend(title='Legend')
 
             # Plot along the liner and the case section at burn time
             plt.figure(4, figsize=(10, 20))
@@ -450,7 +461,7 @@ class myWindows(QtWidgets.QMainWindow):
             plt.xlabel('Radial position [m]')
             plt.ylabel('Temperature [K]')
             plt.legend(title='Legend')
-
+            print('ok')
             plt.show()
 
     def generate_graph_bulk_function(self):
@@ -624,11 +635,10 @@ class motor_case(myWindows):
         self.coast = float(coast)
 
         # Importing material data and calculating the conductivitty coefficient of each one of them
-        print('ok')
+
         if type(material_case) == list:
             self.rho_case, self.k_case, self.cp_case = material_case[1::]
         else:
-            print(material_case)
             self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)
 
         if type(material_liner) == list:
@@ -642,7 +652,7 @@ class motor_case(myWindows):
         if type_analysis == 1:
             self.T, self.Values, self.Values_nt = self.run_analysis_case()
         elif type_analysis == 2:
-            self.T, self.Values = self.run_analysis_explicit()
+            self.T, self.Values, self.Values_nt = self.run_analysis_explicit()
 
     def run_analysis_case(self):
         """
@@ -771,7 +781,7 @@ class motor_case(myWindows):
         values = T[self.nt - 1, ::]
         self.display_loadmessage('Analysis finished',
                                  'The analysis has been finished, now you can generate your output file and graphical resources')
-        return T, values
+        return T, values, values
 
     def create_Amatrix(self):
         """
@@ -864,9 +874,6 @@ class bulkhead(myWindows):
         dt = ((dr ** 2) * (dz ** 2)) / (1.99 * self.alpha_case * (dr ** 2 + dz ** 2))
         nt = math.ceil(self.t / dt)
 
-        # Convection Coefficient Air
-        self.h_m_out = 6
-
         d_insulator = self.alpha_insulator * (dt / (dr ** 2))  # Insulation Fourier number
         d_case = self.alpha_case * (dt / (dr ** 2))  # Casing Fourier number
 
@@ -902,24 +909,26 @@ class bulkhead(myWindows):
                         cp = self.cp_case
                         k = self.k_case
                     if l == nz - 1:
-                        if j == nr - 1:  # z start and r end
-                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
-                                    1 + (k * dt) / (rho * cp * (dr) ** 2) + (k * dt) / (rho * cp * (dz) ** 2) - (
-                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + (
-                                                     (-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + (
-                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
-                        elif j == 0:  # z start and r start
-                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
-                                    1 - (k * dt) / (rho * cp * (dr) ** 2) + (k * dt) / (rho * cp * (dz) ** 2) - (
-                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + (
-                                                     (k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
-                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
-                        else:  # z start and r middle
-                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
-                                    1 + (k * dt) / (rho * cp * (dz) ** 2) - (2 * self.h_m_out * dt) / (rho * cp * dz)) * \
-                                             T[i][j][l] + ((k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
-                                                     (-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + (
-                                                     (-k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l - 1]
+                        if j == nr - 1:  # z end and r end
+                            T[i + 1][j][l] = (1 + (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
+                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
+                                                     (-2 * alpha * dt) / (dr ** 2) - (alpha * dt) / (r[j] * dr)) * \
+                                             T[i][j - 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j - 2][l] + (
+                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
+                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
+                        elif j == 0:  # z end and r start
+                            T[i + 1][j][l] = (1 - (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
+                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
+                                                     (alpha * dt) / (r[j] * dr) - (2 * alpha * dt) / (dr ** 2)) * \
+                                             T[i][j + 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j + 2][l] + (
+                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
+                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
+                        else:  # z end and r middle
+                            T[i + 1][j][l] = (1 - (2 * alpha * dt) / (dr ** 2) + (alpha * dt) / (dz ** 2)) * T[i][j][
+                                l] + ((alpha * dt) / (dr ** 2) - (alpha * dt) / (2 * r[j] * dr)) * T[i][j - 1][l] + (
+                                                     (alpha * dt) / (dr ** 2) + (alpha * dt) / (2 * r[j] * dr)) * \
+                                             T[i][j + 1][l] + ((-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
+                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
                     elif l == 0:
                         if j == nr - 1:  # z start and r end
                             T[i + 1][j][l] = (2 * self.h_m * dt * self.Tc) / (rho * cp * dz) + (
