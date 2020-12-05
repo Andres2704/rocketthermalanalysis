@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 from gui import Ui_RTA
 from custom_material import Ui_CustomMaterial
 
+import traceback
 import sys, math, materials
 import numpy as np
 import datetime, os
@@ -241,8 +242,17 @@ class myWindows(QtWidgets.QMainWindow):
          """
         try:
             # Saving the text provided by the user
-            material_liner = self.ui.material_insulator_4.text()
-            material_case = self.ui.material_bulk.text()
+            # Saving the data provided by the user
+            if self.Custom_insulator_windows == None:
+                material_liner = self.ui.material_insulator.currentText()
+            else:
+                material_liner = [self.Custom_insulator_windows.name, self.Custom_insulator_windows.rho,
+                            self.Custom_insulator_windows.k, self.Custom_insulator_windows.cp]
+            if self.Custom_case_windows == None:
+                material_case = self.ui.material_case.currentText()
+            else:
+                material_case = [self.Custom_case_windows.name, self.Custom_case_windows.rho,
+                           self.Custom_case_windows.k, self.Custom_case_windows.cp]
             coast = self.ui.t_total_bulkhead.text()
             insulator_thk = self.ui.insulator_thk_4.text()
             bulkhead_thk = self.ui.z.text()
@@ -252,7 +262,6 @@ class myWindows(QtWidgets.QMainWindow):
             hm = self.ui.hm_3.text()
             Ta = self.ui.Ta_3.text()
             Tc = self.ui.Tc_3.text()
-
             r_steps = self.ui.r_steps_4.text()
             if int(r_steps) < 10:  # Setting a minimum value to run the analysis
                 self.display_errors('Minimum value', 'Please put at least 10 points for radial step.')
@@ -266,11 +275,13 @@ class myWindows(QtWidgets.QMainWindow):
                     self.display_errors('Empty field', 'There is some empty field, please fill it and run again')
                     return 0
             self.method = 'Explicit'
+
             # Calling the solution method
             self.bulkhead_temperature = bulkhead(material_case, material_liner, insulator_thk, bulkhead_thk, r_inner,
                                                  r_outer, burn_time, r_steps, hm, Ta, Tc, coast)
 
-        except:
+        except Exception:
+            traceback.print_exc()
             self.display_errors('Memory error',
                                 'As a result from your data a memory error has result, please check it.')
             return 1
@@ -476,6 +487,9 @@ class myWindows(QtWidgets.QMainWindow):
         if self.bulkhead_temperature == []:
             self.display_errors('Error', 'You did not run any analysis, please run it to generate a graph')
         else:
+            print(len(self.bulkhead_temperature.T_final), 'len_tfinal')
+            print((self.bulkhead_temperature.T_final))
+
             plt.plot(self.bulkhead_temperature.bulkhead_points, self.bulkhead_temperature.T_final, 'r-+',
                      label='T = ' + str(self.bulkhead_temperature.t))
             plt.title('Temperature distribution - Insulator thickness: ' + str(
@@ -816,7 +830,7 @@ class bulkhead(myWindows):
     """
 
     def __init__(self, material_case, material_liner, insulator_thk, bulkhead_thk, radius_inner, radius_outer,
-                 burn_time, r_steps, hm, Ta, Tc):
+                 burn_time, r_steps, hm, Ta, Tc, coast):
         """
         This is a constructor method of bulkhead class
         :param material_case: Material of the cases (Format=str)
@@ -832,11 +846,7 @@ class bulkhead(myWindows):
         :param Tc: Chamber temperature (Format=float)
         """
         super(bulkhead, self).__init__()
-
         # Explicit attributes for bulkhead
-        self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)  # Case properties
-        self.rho_insulator, self.k_insulator, self.cp_insulator = materials.insulator_selector(
-            material_liner)  # Insulator properties
         self.h_m = float(hm)
         self.h_m_2 = self.h_m # this will be used in the future
         self.insulator_thk = float(insulator_thk)
@@ -847,6 +857,17 @@ class bulkhead(myWindows):
         self.sectionsr = int(r_steps)
         self.Ta = float(Ta)
         self.Tc = float(Tc)
+        self.coast = float(coast)
+
+        if type(material_case) == list:
+            self.rho_case, self.k_case, self.cp_case = material_case[1::]
+        else:
+            self.rho_case, self.k_case, self.cp_case = materials.case_selector(material_case)
+        if type(material_liner) == list:
+            self.rho_insulator, self.k_insulator, self.cp_insulator = material_liner[1::]
+        else:
+            self.rho_insulator, self.k_insulator, self.cp_insulator = materials.insulator_selector(material_liner)
+
         self.alpha_case = float(self.k_case / (self.cp_case * self.rho_case))
         self.alpha_insulator = float(self.k_insulator / (self.cp_insulator * self.rho_insulator))
 
@@ -871,8 +892,15 @@ class bulkhead(myWindows):
         dz = dr / 1.4  # z variation [m]
         nz = math.ceil(self.z / dz)  # Nº of z points
 
+
         dt = ((dr ** 2) * (dz ** 2)) / (1.99 * self.alpha_case * (dr ** 2 + dz ** 2))
-        nt = math.ceil(self.t / dt)
+        nt = math.ceil(self.coast / dt)
+
+        self.total_time = np.linspace(0, self.coast, nt)
+        print(len(self.total_time), 'totaltime')
+
+        # Convection Coefficient Air
+        self.h_m_out = 6
 
         d_insulator = self.alpha_insulator * (dt / (dr ** 2))  # Insulation Fourier number
         d_case = self.alpha_case * (dt / (dr ** 2))  # Casing Fourier number
@@ -889,15 +917,17 @@ class bulkhead(myWindows):
 
         self.display_loadmessage('Running analysis...',
                                  'The analysis will be starting now, it can be time consuming since is an explicit bidimensional method, please be patient. \n[Press ok to start]')
+
         # Calculating the T-matrix
         for i in range(nt - 1):
             for l in range(nz):
                 for j in range(nr): # Setting the value of heat covenctive coefficient based on the radial position
-                    if r[j] > self.radius_outer:
+                    if r[j] > self.radius_inner:
+                        self.h_m = 0
+                    elif self.total_time[i]>self.t:
                         self.h_m = 0
                     else:
                         self.h_m = self.h_m_2
-
                     if z[l] <= z_2:  # Set insulation material
                         alpha = self.alpha_insulator
                         rho = self.rho_insulator
@@ -908,27 +938,27 @@ class bulkhead(myWindows):
                         rho = self.rho_case
                         cp = self.cp_case
                         k = self.k_case
+
                     if l == nz - 1:
-                        if j == nr - 1:  # z end and r end
-                            T[i + 1][j][l] = (1 + (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
-                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
-                                                     (-2 * alpha * dt) / (dr ** 2) - (alpha * dt) / (r[j] * dr)) * \
-                                             T[i][j - 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j - 2][l] + (
-                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
-                        elif j == 0:  # z end and r start
-                            T[i + 1][j][l] = (1 - (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) + (
-                                    alpha * dt) / (dz ** 2)) * T[i][j][l] + (
-                                                     (alpha * dt) / (r[j] * dr) - (2 * alpha * dt) / (dr ** 2)) * \
-                                             T[i][j + 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j + 2][l] + (
-                                                     (-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
-                        else:  # z end and r middle
-                            T[i + 1][j][l] = (1 - (2 * alpha * dt) / (dr ** 2) + (alpha * dt) / (dz ** 2)) * T[i][j][
-                                l] + ((alpha * dt) / (dr ** 2) - (alpha * dt) / (2 * r[j] * dr)) * T[i][j - 1][l] + (
-                                                     (alpha * dt) / (dr ** 2) + (alpha * dt) / (2 * r[j] * dr)) * \
-                                             T[i][j + 1][l] + ((-2 * alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
-                                                     (alpha * dt) / (dz ** 2)) * T[i][j][l - 2]
+                        if j == nr - 1:  # z start and r end
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 + (k * dt) / (rho * cp * (dr) ** 2) - (k * dt) / (rho * cp * (dz) ** 2) - (
+                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + \
+                                                     ((-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + \
+                                                     ((k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l + 1]
+
+                        elif j == 0:  # z start and r start
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 - (k * dt) / (rho * cp * (dr) ** 2) - (k * dt) / (rho * cp * (dz) ** 2) - (
+                                    2 * self.h_m_out * dt) / (rho * cp * dz)) * T[i][j][l] + (
+                                                     (k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
+                                                     (k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l + 1]
+                        else:  # z start and r middle
+                            T[i + 1][j][l] = (2 * self.h_m_out * dt * self.Ta) / (rho * cp * dz) + (
+                                    1 + (k * dt) / (rho * cp * (dz) ** 2) - (2 * self.h_m_out * dt) / (rho * cp * dz)) * \
+                                             T[i][j][l] + ((k * dt) / (rho * cp * (dr) ** 2)) * T[i][j + 1][l] + (
+                                                     (-k * dt) / (rho * cp * (dr) ** 2)) * T[i][j - 1][l] + (
+                                                     (k * dt) / (rho * cp * (dz) ** 2)) * T[i][j][l + 1]
                     elif l == 0:
                         if j == nr - 1:  # z start and r end
                             T[i + 1][j][l] = (2 * self.h_m * dt * self.Tc) / (rho * cp * dz) + (
@@ -951,8 +981,7 @@ class bulkhead(myWindows):
                     else:
                         if j == nr - 1:  # z middle and r end
                             T[i + 1][j][l] = (1 + (alpha * dt) / (r[j] * dr) + (alpha * dt) / (dr ** 2) - (
-                                    2 * alpha * dt) / (dz ** 2)) * T[i][j][l] + (
-                                                     (-2 * alpha * dt) / (dr ** 2) - (alpha * dt) / (r[j] * dr)) * \
+                                    2 * alpha * dt) / (dz ** 2)) * T[i][j][l] + ((-2 * alpha * dt) / (dr ** 2) - (alpha * dt) / (r[j] * dr)) * \
                                              T[i][j - 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j - 2][l] + (
                                                      (alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
                                                      (alpha * dt) / (dz ** 2)) * T[i][j][l + 1]
@@ -964,6 +993,7 @@ class bulkhead(myWindows):
                                              T[i][j + 1][l] + ((alpha * dt) / (dr ** 2)) * T[i][j + 2][l] + (
                                                      (alpha * dt) / (dz ** 2)) * T[i][j][l - 1] + (
                                                      (alpha * dt) / (dz ** 2)) * T[i][j][l + 1]
+
                         else:  # z middle and r middle
                             T[i + 1][j][l] = (1 - (2 * alpha * dt) / (dr ** 2) - (2 * alpha * dt) / (dz ** 2)) * \
                                              T[i][j][l] + ((alpha * dt) / (dr ** 2) - (alpha * dt) / (2 * r[j] * dr)) * \
