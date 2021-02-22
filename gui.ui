@@ -311,8 +311,8 @@
        <widget class="QLabel" name="label_6">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>100</y>
+          <x>330</x>
+          <y>150</y>
           <width>141</width>
           <height>16</height>
          </rect>
@@ -324,9 +324,9 @@
        <widget class="QLineEdit" name="Ta">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>120</y>
-          <width>141</width>
+          <x>330</x>
+          <y>170</y>
+          <width>151</width>
           <height>20</height>
          </rect>
         </property>
@@ -334,8 +334,8 @@
        <widget class="QLabel" name="label_8">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>50</y>
+          <x>330</x>
+          <y>100</y>
           <width>141</width>
           <height>16</height>
          </rect>
@@ -347,9 +347,9 @@
        <widget class="QLineEdit" name="Tc">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>70</y>
-          <width>141</width>
+          <x>330</x>
+          <y>120</y>
+          <width>151</width>
           <height>20</height>
          </rect>
         </property>
@@ -380,7 +380,7 @@
        <widget class="QLabel" name="label_10">
         <property name="geometry">
          <rect>
-          <x>400</x>
+          <x>330</x>
           <y>50</y>
           <width>141</width>
           <height>16</height>
@@ -393,9 +393,9 @@
        <widget class="QLineEdit" name="burn_time">
         <property name="geometry">
          <rect>
-          <x>401</x>
+          <x>331</x>
           <y>70</y>
-          <width>141</width>
+          <width>151</width>
           <height>20</height>
          </rect>
         </property>
@@ -403,37 +403,14 @@
        <widget class="QPushButton" name="run_implicit">
         <property name="geometry">
          <rect>
-          <x>400</x>
-          <y>160</y>
-          <width>301</width>
-          <height>31</height>
+          <x>510</x>
+          <y>100</y>
+          <width>171</width>
+          <height>51</height>
          </rect>
         </property>
         <property name="text">
          <string>Run analysis</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="t_total_implicit">
-        <property name="geometry">
-         <rect>
-          <x>401</x>
-          <y>120</y>
-          <width>141</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_45">
-        <property name="geometry">
-         <rect>
-          <x>400</x>
-          <y>100</y>
-          <width>141</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Fly time [s]:</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_11">
@@ -648,8 +625,8 @@
        <widget class="QLabel" name="label_30">
         <property name="geometry">
          <rect>
-          <x>180</x>
-          <y>20</y>
+          <x>10</x>
+          <y>120</y>
           <width>121</width>
           <height>16</height>
          </rect>
@@ -661,8 +638,8 @@
        <widget class="QLineEdit" name="z">
         <property name="geometry">
          <rect>
-          <x>180</x>
-          <y>40</y>
+          <x>10</x>
+          <y>140</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -671,8 +648,8 @@
        <widget class="QLabel" name="radius_inner">
         <property name="geometry">
          <rect>
-          <x>390</x>
-          <y>20</y>
+          <x>180</x>
+          <y>120</y>
           <width>131</width>
           <height>16</height>
          </rect>
@@ -684,8 +661,8 @@
        <widget class="QLineEdit" name="ri_4">
         <property name="geometry">
          <rect>
-          <x>390</x>
-          <y>40</y>
+          <x>180</x>
+          <y>140</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -698,7 +675,7 @@
         <property name="geometry">
          <rect>
           <x>180</x>
-          <y>70</y>
+          <y>20</y>
           <width>121</width>
           <height>16</height>
          </rect>
@@ -711,7 +688,7 @@
         <property name="geometry">
          <rect>
           <x>180</x>
-          <y>90</y>
+          <y>40</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -721,7 +698,7 @@
         <property name="geometry">
          <rect>
           <x>180</x>
-          <y>140</y>
+          <y>90</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -731,7 +708,7 @@
         <property name="geometry">
          <rect>
           <x>180</x>
-          <y>120</y>
+          <y>70</y>
           <width>141</width>
           <height>16</height>
          </rect>
@@ -743,8 +720,8 @@
        <widget class="QLabel" name="label_34">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>70</y>
+          <x>350</x>
+          <y>120</y>
           <width>141</width>
           <height>16</height>
          </rect>
@@ -756,8 +733,8 @@
        <widget class="QLineEdit" name="Ta_3">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>90</y>
+          <x>350</x>
+          <y>140</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -766,8 +743,8 @@
        <widget class="QLabel" name="label_35">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>20</y>
+          <x>350</x>
+          <y>70</y>
           <width>141</width>
           <height>16</height>
          </rect>
@@ -779,8 +756,8 @@
        <widget class="QLineEdit" name="Tc_3">
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>40</y>
+          <x>350</x>
+          <y>90</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -812,8 +789,8 @@
        <widget class="QLineEdit" name="radius_outer">
         <property name="geometry">
          <rect>
-          <x>390</x>
-          <y>90</y>
+          <x>350</x>
+          <y>40</y>
           <width>161</width>
           <height>20</height>
          </rect>
@@ -822,8 +799,8 @@
        <widget class="QLabel" name="r_outer">
         <property name="geometry">
          <rect>
-          <x>390</x>
-          <y>70</y>
+          <x>350</x>
+          <y>20</y>
           <width>131</width>
           <height>16</height>
          </rect>
@@ -832,36 +809,13 @@
          <string>Chamber outer radius [m]:</string>
         </property>
        </widget>
-       <widget class="QLineEdit" name="t_total_bulkhead">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>140</y>
-          <width>161</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_47">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>120</y>
-          <width>141</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Fly time [s]:</string>
-        </property>
-       </widget>
        <widget class="QPushButton" name="run_bulk">
         <property name="geometry">
          <rect>
-          <x>390</x>
-          <y>140</y>
-          <width>331</width>
-          <height>31</height>
+          <x>540</x>
+          <y>70</y>
+          <width>161</width>
+          <height>61</height>
          </rect>
         </property>
         <property name="text">
@@ -1333,7 +1287,6 @@ chamber diameter [m]:</string>
   <tabstop>t_steps</tabstop>
   <tabstop>hm</tabstop>
   <tabstop>burn_time</tabstop>
-  <tabstop>t_total_implicit</tabstop>
   <tabstop>Tc</tabstop>
   <tabstop>Ta</tabstop>
   <tabstop>run_implicit</tabstop>
@@ -1342,7 +1295,6 @@ chamber diameter [m]:</string>
   <tabstop>tabWidget</tabstop>
   <tabstop>insulator_thk_4</tabstop>
   <tabstop>burn_time_4</tabstop>
-  <tabstop>t_total_bulkhead</tabstop>
   <tabstop>z</tabstop>
   <tabstop>r_steps_4</tabstop>
   <tabstop>hm_3</tabstop>
