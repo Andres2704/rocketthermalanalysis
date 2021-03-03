@@ -11,11 +11,12 @@ Rocket Thermal Analysis(RTA) is an open-source thermal analysis software develop
 - Temperature distribution along the bulkhead by 2D explicit method.
 - Generate multiple graphs and output file with the results.
 - Convective heat transfer coefficient calculator.
+- Multiple and custom material selector
 
 *Future features*:
-- Generate a detailed outuput file for the bulkhead
 - Create a pop-up window to build specific graphs
 - .xlsx file with the results
+- Coasting phase 
 
 ### How to use RTA(Rocket Thermal Analysis):
 * You can download the executable file [here](https://mega.nz/file/xJF0xByB#TC003mz6IPvXfgTSPowNxX6tO_Ud2U0WDiWHZQrwk3A).
