@@ -593,8 +593,8 @@ class myWindows(QtWidgets.QMainWindow):
 
     def generate_pdf_hm(self):
             date = datetime.datetime.now()
-            filename = 'mydoc.pdf'
-            #filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))+'.pdf'
+            # filename = 'mydoc.pdf'
+            filename = 'HeatConvectiveCoef_'+str(date.strftime('%f'))+'.pdf'
 
             # defining the header text
             title = 'Heat Convective Coefficient Report - By Rocket Thermal Analysis'

@@ -25,13 +25,38 @@ Once you have opened RTA the main window will be something like this:
 
 ![alt text](https://github.com/Andres2704/rocketthermalanalysis/blob/master/images/main.PNG)
 
-The main window is destinated to analyse the 1D temperature distribution along the motor case and for that you have two options of numerical methods. One is the implicit (recommended) and the other is the explicit method, the second one is more time consuming than the first. 
+The main window is destinated to analyse the 1D temperature distribution along the motor case and for that you have two options of numerical methods. One is the implicit (recommended) and the other is the explicit method. 
 
 On the second tab you will be able to simulate a 2D temperature distribution along the motor's bulkhead. This is a slow method since it is explicit and bidimensional, so be patient.
 
 All the three analysis can be exported as output txt file which you can easily import to excel or other sheet editor and also you can generate plots of the results. 
 
 For all the mathematical model of the software you can find [here](https://github.com/Andres2704/rocketthermalanalysis/blob/master/Thermal_Analysis_software.pdf).
+
+You can also load an input case from an .RTA file, an example is available in "input_file.rta". In case of saving the input case you can also do it. In both cases, below we show how to used an input .RTA file, noting that all variables are in S.I units, 
+
+#### .RTA File: 
+---
+```
+    Case, Bulkhead/Motor Case
+    Solver, Implicit/Explicit
+    Case/Bulkhead Material, Steel 1010 (within the options available)
+    Insulator Material, NBR (within the options available)
+    Insulator Thickness, 0.003
+    Case/Bulkhead Thickness, 0.0055
+    Inner radius, 0.11
+    Radial Section, 10
+    Time steps, 250
+    Convection coeff, 1295
+    Burn Time, 5
+    Combustion Temperature, 1600
+    Initial Temperature, 297
+    Outer radius (bulkhead case), 0.012
+```
+
+
+
+
 
 ### Source:
 
