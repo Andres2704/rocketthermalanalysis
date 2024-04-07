@@ -1,0 +1,14 @@
+Case, Bulkhead
+Solver, Implicit
+Case/Bulkhead Material, Steel 1010
+Insulator Material, NBR
+Insulator Thickness, 0.003
+Case/Bulkhead Thickness, 0.0055
+Inner radius, 0.11
+Radial Section, 10
+Time steps, 250
+Convection coeff, 1295
+Burn Time, 5
+Combustion Temperature, 1600
+Initial Temperature, 297
+Outer radius (bulkhead case), 0.012

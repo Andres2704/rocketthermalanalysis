@@ -49,6 +49,9 @@ class myWindows(QtWidgets.QMainWindow):
         self.run_bulk_button = self.ui.run_bulk.clicked.connect(
             self.run_bulkhead_function)  # Run bulkhead explicit method
 
+        self.open_file_button = self.ui.actionOpen.triggered.connect(self.open_file)
+
+        self.save_file_button = self.ui.actionSave.triggered.connect(self.save_file)
 
         self.generate_graph_case = \
             self.ui.generate_graphs_2.triggered.connect(self.generate_graph_case_function) # Generate graphs for case analysis
@@ -81,6 +84,129 @@ class myWindows(QtWidgets.QMainWindow):
         if self.Custom_insulator_windows == None:
             self.Custom_insulator_windows = custom_materials(self)
         self.Custom_insulator_windows.show()
+
+    def open_file(self):
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', 
+         'c:\\',"Rocket Thermal Analysis (*.rta)")
+        
+        if fname[0] != '':
+            file = pd.read_csv(fname[0], sep=",", header=None)
+
+            if file.at[0, 1].strip().lower() == 'motor case': 
+                self.ui.insulator_thk.setText(file.at[4, 1].strip())
+                self.ui.case_thk.setText(file.at[5, 1].strip())
+                self.ui.ri.setText(file.at[6, 1].strip())
+                self.ui.r_steps.setText(file.at[7, 1].strip())
+                self.ui.t_steps.setText(file.at[8, 1].strip())
+                self.ui.hm.setText(file.at[9, 1].strip())
+                self.ui.burn_time.setText(file.at[10, 1].strip())
+                self.ui.Tc.setText(file.at[11, 1].strip())
+                self.ui.Ta.setText(file.at[12, 1].strip())
+
+                AllItems_case = [self.ui.material_case.itemText(i) for i in range(self.ui.material_case.count())]
+                AllItems_insu = [self.ui.material_insulator.itemText(i) for i in range(self.ui.material_insulator.count())]
+
+                if file.at[1, 1].strip().lower() == 'implicit':
+                    self.ui.type_analysis_case.setCurrentIndex(0)
+                else:
+                    self.ui.type_analysis_case.setCurrentIndex(1)
+
+                if file.at[2, 1].strip() in AllItems_case:
+                    ind = AllItems_case.index(file.at[2, 1].strip())
+                    self.ui.material_case.setCurrentIndex(ind)
+                else:
+                    self.display_loadwarning('Uknown Material - Case', 'Please, set material properties')
+                    self.ui.material_case.addItem(file.at[2, 1].strip())
+
+                if file.at[3, 1].strip() in AllItems_insu:
+                    ind = AllItems_insu.index(file.at[3, 1].strip())
+                    self.ui.material_insulator.setCurrentIndex(ind)
+                else:
+                    self.display_loadwarning('Uknown Material - Insulation', 'Please, set material properties')
+                    self.ui.material_insulator.addItem(file.at[3, 1].strip())
+            else:
+                self.ui.tabWidget.setCurrentIndex(1)
+                self.ui.insulator_thk_4.setText(file.at[4, 1].strip())
+                self.ui.z.setText(file.at[5, 1].strip())
+                self.ui.ri_4.setText(file.at[6, 1].strip())
+                self.ui.r_steps_4.setText(file.at[7, 1].strip())
+                self.ui.burn_time_4.setText(file.at[10, 1].strip())
+                self.ui.hm_3.setText(file.at[9, 1].strip())
+                self.ui.Tc_3.setText(file.at[11, 1].strip())
+                self.ui.Ta_3.setText(file.at[12, 1].strip())
+                self.ui.radius_outer.setText(file.at[12, 1].strip())
+
+                AllItems_bulk = [self.ui.material_bulk.itemText(i) for i in range(self.ui.material_bulk.count())]
+                AllItems_insu = [self.ui.material_insulator_2.itemText(i) for i in range(self.ui.material_insulator_2.count())]
+
+                if file.at[2, 1].strip() in AllItems_bulk:
+                    ind = AllItems_bulk.index(file.at[2, 1].strip())
+                    self.ui.material_bulk.setCurrentIndex(ind)
+                else:
+                    self.display_loadwarning('Uknown Material - Case', 'Please, set material properties')
+                    self.ui.material_bulk.addItem(file.at[2, 1].strip())
+
+                if file.at[3, 1].strip() in AllItems_insu:
+                    ind = AllItems_insu.index(file.at[3, 1].strip())
+                    self.ui.material_insulator_2.setCurrentIndex(ind)
+                else:
+                    self.display_loadwarning('Uknown Material - Insulation', 'Please, set material properties')
+                    self.ui.material_insulator_2.addItem(file.at[3, 1].strip())
+
+    def save_file(self):
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self,"Save RTA study case","","Rocket Thermal Analysis (*.rta)")
+        
+        # Saving the data provided by the user
+        if self.Custom_insulator_windows == None:
+            liner_op = self.ui.material_insulator.currentText()
+        else:
+            liner_op = self.Custom_insulator_windows.name
+                
+        if self.ui.tabWidget.currentIndex() == 0:
+            if self.Custom_case_windows == None:
+                case_op = self.ui.material_case.currentText()
+            else:
+                case_op = self.Custom_case_windows.name
+            file_tosave = 'Case, Motor Case' + \
+                            '\nSolver, ' + self.ui.type_analysis_case.currentText() +\
+                            '\nCase/Bulkhead Material, ' + case_op +\
+                            '\nInsulator Material, ' + liner_op+\
+                            '\nInsulator Thickness,' + self.ui.insulator_thk.text()+\
+                            '\nCase/Bulkhead Thickness, '+ self.ui.case_thk.text() +\
+                            '\nInner radius,'+ self.ui.ri.text() +\
+                            '\nRadial Section, '+self.ui.r_steps.text()+\
+                            '\nTime steps, '+self.ui.t_steps.text()+\
+                            '\nConvection coeff, '+self.ui.hm.text()+\
+                            '\nBurn Time, '+self.ui.burn_time.text()+\
+                            '\nCombustion Temperature, '+self.ui.Tc.text()+\
+                            '\nInitial Temperature, '+self.ui.Ta.text()+\
+                            '\nOuter radius (bulkhead case), ' + self.ui.radius_outer.text() 
+        
+        else: 
+            if self.Custom_case_windows == None:
+                case_op = self.ui.material_bulk.currentText()
+            else:
+                case_op = self.Custom_case_windows.name
+            file_tosave = 'Case, Bulkhead' + \
+                            '\nSolver, Explicit' +\
+                            '\nCase/Bulkhead Material, ' + case_op +\
+                            '\nInsulator Material, ' + liner_op+\
+                            '\nInsulator Thickness,' + self.ui.insulator_thk_4.text()+\
+                            '\nCase/Bulkhead Thickness, '+ self.ui.z.text() +\
+                            '\nInner radius,'+ self.ui.ri_4.text() +\
+                            '\nRadial Section, '+self.ui.r_steps_4.text()+\
+                            '\nTime steps, '+self.ui.t_steps.text()+\
+                            '\nConvection coeff, '+self.ui.hm_3.text()+\
+                            '\nBurn Time, '+self.ui.burn_time_4.text()+\
+                            '\nCombustion Temperature, '+self.ui.Tc_3.text()+\
+                            '\nInitial Temperature, '+self.ui.Ta_3.text()+\
+                            '\nOuter radius (bulkhead case), ' + self.ui.radius_outer.text() 
+        
+        if fileName != '':
+            open(fileName, "w").close()
+            f = open(fileName, "a")
+            f.write(file_tosave)
+            f.close()
 
     def display_errors(self, text, message):
         """
